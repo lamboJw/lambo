@@ -1,0 +1,9 @@
+{
+  "require": {
+    "php": "7.4",
+    "swoole": "4.5.*",
+    "swoole/ide-helper": "^4.5",
+    "ext-json": "*",
+    "ext-mbstring": "*"
+  }
+}
