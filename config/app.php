@@ -18,7 +18,7 @@ $config = [
 
     'log_file_permissions' => 0644,         //日志文件的权限
 
-    'server_type' => SWOOLE_HTTP_SERVER,    //启动服务器的类型，SWOOLE_HTTP_SERVER 或 CO_HTTP_SERVER
+    'server_type' => CO_HTTP_SERVER,        //启动服务器的类型，异步风格SWOOLE_HTTP_SERVER 或 协程风格CO_HTTP_SERVER
 
-    'std_output_to_page' => true,           //标准输出是否输出到页面
+    'std_output_to_page' => false,           //标准输出是否输出到页面
 ];

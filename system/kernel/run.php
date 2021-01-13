@@ -91,7 +91,7 @@ if($server_type == CO_HTTP_SERVER){
     //异步风格
     $http_config = config('swoole', 'http');
 
-    $server = new Swoole\Http\Server($http_config['host'] ?? '127.0.0.1', $http_config['port'] ?? '10086', SWOOLE_PROCESS, $http_config['socket_type'] ?? SWOOLE_SOCK_TCP);
+    $server = new Swoole\Http\Server($http_config['host'] ?? '127.0.0.1', $http_config['port'] ?? '10086', $http_config['server_mode'] ?? SWOOLE_BASE, $http_config['socket_type'] ?? SWOOLE_SOCK_TCP);
     $server_config = config('swoole', 'server', []);
     if (!empty($server_config)) {
         $server->set($server_config);
@@ -117,8 +117,17 @@ if($server_type == CO_HTTP_SERVER){
                     }
                 }
                 if ($middleware_result) {
-                    $class = new $route['class']();
-                    call_user_func([$class, $route['func']]);
+                    if(config('app','std_output_to_page')){
+                        //输出标准输出到页面时的写法
+                        response()->return(function () use ($route) {
+                            $class = new $route['class']();
+                            call_user_func([$class, $route['func']]);
+                        });
+                    }else{
+                        //标准输出到控制台的写法
+                        $class = new $route['class']();
+                        call_user_func([$class, $route['func']]);
+                    }
                 }
             }
         } catch (Throwable $e) {
