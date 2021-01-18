@@ -19,41 +19,44 @@ class Application
 
     private function __construct($request, $response)
     {
-        if(server_type() == CO_HTTP_SERVER){
+        if (server_type() == CO_HTTP_SERVER) {
             $this->context = Coroutine::getContext();
-        }else{
+        } else {
             $this->context = [];
         }
         $this->context['ob_count'] = 0;     //缓冲区计数
         $this->set_request($request);
         $this->set_response($response);
+        $this->set_websocket_response($response);
     }
 
-    public function set_request($request)
+    private function set_request($request)
     {
         $this->context['request'] = new Request($request);
     }
 
-    public function request(){
+    public function request(): Request
+    {
         return $this->context['request'];
     }
 
-    public function set_response($response)
+    private function set_response($response)
     {
         $this->context['response'] = new Response($response);
     }
 
-    public function response()
+    public function response(): Response
     {
         return $this->context['response'];
     }
 
-    public function set_websocket_response($response)
+    private function set_websocket_response($response)
     {
         $this->context['websocket_response'] = new WebsocketResponse($response);
     }
 
-    public function ws_response(){
+    public function ws_response(): WebsocketResponse
+    {
         return $this->context['websocket_response'];
     }
 
@@ -78,9 +81,9 @@ class Application
      */
     public function set($key, $value = '')
     {
-        if(is_array($key)){
+        if (is_array($key)) {
             $this->context['params'] = array_merge($this->context['params'], $key);
-        }else{
+        } else {
             $this->context['params'][$key] = $value;
         }
     }
@@ -92,12 +95,12 @@ class Application
      */
     public function get($key)
     {
-        if(is_array($key)){
+        if (is_array($key)) {
             $return = [];
             foreach ($key as $item) {
                 $return[$item] = $this->context['params'][$item] ?? null;
             }
-        }else{
+        } else {
             return $this->context['params'][$key] ?? null;
         }
     }
@@ -105,41 +108,46 @@ class Application
     /**
      * 以下方法用于输出标准输出到页面的辅助方法
      */
-    public function ob_start(){
+    public function ob_start()
+    {
         $this->context['ob_count']++;
         ob_start();
     }
 
-    public function ob_get_clean(){
-        if($this->context['ob_count'] > 0){
+    public function ob_get_clean()
+    {
+        if ($this->context['ob_count'] > 0) {
             $this->context['ob_count']--;
         }
         return ob_get_clean();
     }
 
-    public function ob_clean_all(){
-        if($this->context['ob_count'] > 0){
+    public function ob_clean_all()
+    {
+        if ($this->context['ob_count'] > 0) {
             log_message('NOTICE', "有未闭合缓冲区{$this->context['ob_count']}个");
-            for($i=$this->context['ob_count'];$i>0;$i--){
+            for ($i = $this->context['ob_count']; $i > 0; $i--) {
                 $this->context['ob_count']--;
-                config('app','debug') ? ob_end_flush() : ob_end_clean();
+                config('app', 'debug') ? ob_end_flush() : ob_end_clean();
             }
         }
     }
 
-    public function ob_get_all(){
+    public function ob_get_all()
+    {
         $all = [];
-        if($this->context['ob_count'] > 0){
-            for($i=$this->context['ob_count'];$i>0;$i--){
+        if ($this->context['ob_count'] > 0) {
+            for ($i = $this->context['ob_count']; $i > 0; $i--) {
                 $all[$this->context['ob_count']] = $this->ob_get_clean();
             }
         }
         return $all;
     }
 
-    public function ob_restore_all($all){
-        if($this->context['ob_count'] == 0){
-            foreach ($all as $item){
+    public function ob_restore_all($all)
+    {
+        if ($this->context['ob_count'] == 0) {
+            foreach ($all as $item) {
                 $this->ob_start();
                 echo $item;
             }

@@ -1,24 +1,46 @@
 <?php
 $config = [
-    'load_vendor' => true,                  //是否加载vendor
+    // 是否加载vendor
+    'load_vendor' => true,
 
-    'env' => 'development',
+    // 是否记录debug信息
+    'debug' => false,
 
-    'debug' => true,                        //是否记录debug信息
+    // 记录debug信息的最高等级
+    'debug_level' => LEVEL_ALL,
 
-    'debug_level' => LEVEL_ALL,           //记录debug信息的最高等级
+    // 日志文件的保存路径
+    'log_path' => STATIC_PATH.'/logs',
 
-    'log_path' => STATIC_PATH.'/logs',      //日志文件的保存路径
+    // 记录日志的最高等级
+    'log_level' => LEVEL_NONE,
 
-    'log_level' => LEVEL_NONE,             //记录日志的最高等级
+    // 日志文件的后缀
+    'log_file_extension' => 'txt',
 
-    'log_file_extension' => 'txt',          //日志文件的后缀
+    // 日志消息的时间格式
+    'log_date_format' => 'Y-m-d H:i:s',
 
-    'log_date_format' => 'Y-m-d H:i:s',     //日志消息的时间格式
+    // 日志文件的权限
+    'log_file_permissions' => 0644,
 
-    'log_file_permissions' => 0644,         //日志文件的权限
+    /*
+     * 启动服务器的类型
+     * 异步风格SWOOLE_HTTP_SERVER 或 协程风格CO_HTTP_SERVER
+     * 协程风格速度快，但压测会有请求失败的
+     * 异步风格慢三分一，但请求失败的情况少很多
+     */
+    'server_type' => CO_HTTP_SERVER,
 
-    'server_type' => CO_HTTP_SERVER,        //启动服务器的类型，异步风格SWOOLE_HTTP_SERVER 或 协程风格CO_HTTP_SERVER
+    // 标准输出是否输出到页面
+    'std_output_to_page' => false,
 
-    'std_output_to_page' => false,           //标准输出是否输出到页面
+    // 开启redis连接池
+    'enable_redis_pool' => false,
+
+    // redis使用配置
+    'redis_config_key' => 'default',
+
+    // 开启mysql连接池
+    'enable_mysql_pool' => false,
 ];

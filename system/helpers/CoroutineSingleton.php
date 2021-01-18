@@ -38,6 +38,16 @@ trait CoroutineSingleton
         }
     }
 
+    static function isInstantiated(){
+        if (config('app', 'server_type') == CO_HTTP_SERVER) {
+            $context = Coroutine::getContext();
+            return isset($context[self::$class_key]);
+        }else{
+            $cid = Coroutine::getCid();
+            return !isset(self::$instance[$cid]);
+        }
+    }
+
     static function destroy()
     {
         if (config('app', 'server_type') == CO_HTTP_SERVER) {

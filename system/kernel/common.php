@@ -132,9 +132,48 @@ if (!function_exists('load_class')) {
 }
 spl_autoload_register('load_class');
 
+if (!function_exists('library')) {
+    function library($name, ...$args)
+    {
+        static $_library = [];
+        if(!isset($_library[$name])){
+            $class = "\\app\\libraries\\{$name}";
+            $_library[$name] = new $class(...$args);
+        }
+        return $_library[$name];
+    }
+}
+if (!function_exists('helper')) {
+    function helper($name, ...$args)
+    {
+        static $_helper = [];
+        if(!isset($_helper[$name])){
+            $class = "\\app\\helpers\\{$name}";
+            $_helper[$name] = new $class(...$args);
+        }
+        return $_helper[$name];
+    }
+}
+
+if (!function_exists('autoload_lib_and_helper')) {
+    function autoload_lib_and_helper()
+    {
+        $autoload_config = config('autoload');
+        if(!empty($autoload_config['libraries'])){
+            foreach ($autoload_config['libraries'] as $class) {
+                library($class);
+            }
+        }
+        if(!empty($autoload_config['helpers'])){
+            foreach ($autoload_config['helpers'] as $class) {
+                helper($class);
+            }
+        }
+    }
+}
 
 if (!function_exists('app')) {
-    function app()
+    function app(): \system\kernel\Application
     {
         return \system\kernel\Application::getInstance();
     }
@@ -143,6 +182,9 @@ if (!function_exists('app')) {
 if (!function_exists('request')) {
     function request(...$keys)
     {
+        if(!\system\kernel\Application::isInstantiated()){
+            return false;
+        }
         if (empty($keys)) {
             return app()->request();
         } else {
@@ -155,6 +197,9 @@ if (!function_exists('request')) {
 if (!function_exists('response')) {
     function response($data = '')
     {
+        if(!\system\kernel\Application::isInstantiated()){
+            return false;
+        }
         if (empty($data)) {
             return app()->response();
         } else {
@@ -166,6 +211,9 @@ if (!function_exists('response')) {
 if (!function_exists('ws_response')) {
     function ws_response($data = '', $opcode = WEBSOCKET_OPCODE_TEXT, $flags = true)
     {
+        if(!\system\kernel\Application::isInstantiated()){
+            return false;
+        }
         if (empty($data)) {
             return app()->ws_response();
         } else {
@@ -177,6 +225,9 @@ if (!function_exists('ws_response')) {
 if (!function_exists('server')) {
     function server($key = '')
     {
+        if(!\system\kernel\Application::isInstantiated()){
+            return false;
+        }
         return app()->request()->server($key);
     }
 }

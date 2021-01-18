@@ -2,12 +2,13 @@
 $config = [
     'default' => [
         'host' => '127.0.0.1',
-        'port' => '3307',
-        'user' => 'root',
+        'port' => 3308,
+        'username' => 'root',
         'password' => 'admin',
-        'database' => 'test',
-        'char_set' => 'utf8mb4',
-        'dbcollat' => 'utf8mb4_general_ci',
-        'db_drive' => 'mysqli'
+        'database' => 'h5_sdk_plat',
+        'charset' => 'utf8mb4',
+        'unixSocket' => null,
+        'options' => [],
+        'size' => 100,
     ],
 ];
