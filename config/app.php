@@ -30,7 +30,7 @@ $config = [
      * 协程风格速度快，但压测会有请求失败的
      * 异步风格慢三分一，但请求失败的情况少很多
      */
-    'server_type' => CO_HTTP_SERVER,
+    'server_type' => SWOOLE_HTTP_SERVER,
 
     // 标准输出是否输出到页面
     'std_output_to_page' => false,
