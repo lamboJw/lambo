@@ -92,6 +92,8 @@ if ($server_type == CO_HTTP_SERVER) {
 //HTTP服务器处理请求函数
 function http_server_callback(\Swoole\Http\Request $request, \Swoole\Http\Response $response, $route_map)
 {
+    $response->end(json_encode(['ret'=>1, 'msg'=>'success', 'content'=>[]]));
+    return;
     //处理chrome请求favicon.ico
     if ($request->server['path_info'] == '/favicon.ico' || $request->server['request_uri'] == '/favicon.ico') {
         $response->sendfile(STATIC_PATH . '/common/images/favicon.ico');

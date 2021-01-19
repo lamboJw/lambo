@@ -27,7 +27,9 @@ class Application
         $this->context['ob_count'] = 0;     //缓冲区计数
         $this->set_request($request);
         $this->set_response($response);
-        $this->set_websocket_response($response);
+        if(config('swoole', 'websocket')['open_websocket'] ?? false){
+            $this->set_websocket_response($response);
+        }
     }
 
     private function set_request($request)
