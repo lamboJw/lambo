@@ -44,7 +44,7 @@ trait CoroutineSingleton
             return isset($context[self::$class_key]);
         }else{
             $cid = Coroutine::getCid();
-            return !isset(self::$instance[$cid]);
+            return isset(self::$instance[$cid]);
         }
     }
 

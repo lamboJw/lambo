@@ -183,7 +183,7 @@ if (!function_exists('request')) {
     function request(...$keys)
     {
         if(!\system\kernel\Application::isInstantiated()){
-            return false;
+            throw new RuntimeException('Application未实例化');
         }
         if (empty($keys)) {
             return app()->request();
@@ -198,7 +198,7 @@ if (!function_exists('response')) {
     function response($data = '')
     {
         if(!\system\kernel\Application::isInstantiated()){
-            return false;
+            throw new RuntimeException('Application未实例化');
         }
         if (empty($data)) {
             return app()->response();
@@ -212,7 +212,7 @@ if (!function_exists('ws_response')) {
     function ws_response($data = '', $opcode = WEBSOCKET_OPCODE_TEXT, $flags = true)
     {
         if(!\system\kernel\Application::isInstantiated()){
-            return false;
+            throw new RuntimeException('Application未实例化');
         }
         if (empty($data)) {
             return app()->ws_response();
@@ -226,7 +226,7 @@ if (!function_exists('server')) {
     function server($key = '')
     {
         if(!\system\kernel\Application::isInstantiated()){
-            return false;
+            throw new RuntimeException('Application未实例化');
         }
         return app()->request()->server($key);
     }
