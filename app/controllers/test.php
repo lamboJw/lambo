@@ -18,9 +18,9 @@ class test
         /*$model = new example();
         $re = $model->getList(['id'=>[1,2,3]],"title");
         api_response(1,'success',$re);*/
-        $redis = new BaseRedis();
-        $re = $redis->sadd('test',date("Y-m-d H:i:s"));
-        api_response(1, 'success', $re);
+//        $redis = new BaseRedis();
+//        $re = $redis->sadd('test',date("Y-m-d H:i:s"));
+        api_response(1, 'success');
     }
 
     public function index2()
