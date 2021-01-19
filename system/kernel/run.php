@@ -90,7 +90,7 @@ if ($server_type == CO_HTTP_SERVER) {
 }
 
 //HTTP服务器处理请求函数
-function http_server_callback($request, $response, $route_map)
+function http_server_callback(\Swoole\Http\Request $request, \Swoole\Http\Response $response, $route_map)
 {
     //处理chrome请求favicon.ico
     if ($request->server['path_info'] == '/favicon.ico' || $request->server['request_uri'] == '/favicon.ico') {
@@ -121,12 +121,12 @@ function http_server_callback($request, $response, $route_map)
                     //标准输出到控制台的写法
                     $class = new $route['class']();
                     call_user_func([$class, $route['func']]);
-                    $response->end();
+                    response()->end();
                 }
             }
         } else {
-            $response->status(404);
-            $response->end('<h1>Page Not Found</h1>');
+            response()->status(404);
+            response()->end('<h1>Page Not Found</h1>');
         }
     } catch (Throwable $e) {
         debug('ERROR', '捕获错误：' . swoole_last_error() . '， 错误信息：' . $e->getMessage());
@@ -137,7 +137,7 @@ function http_server_callback($request, $response, $route_map)
         } else {
             response('服务器错误');
         }
-        $response->end();
+        response()->end();
     }
     if (config('app', 'std_output_to_page')) {
         app()->ob_clean_all();    //使用标准输出到页面时，需要清除缓冲区

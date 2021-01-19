@@ -45,13 +45,17 @@ class Response
         $this->write(json_encode($data));
     }
 
-    private function end()
+    public function end($content = '')
     {
         if ($this->is_end()) {
             return null;
         }
         $this->is_end = true;
-        $this->response->end();
+        if(!empty($content)){
+            $this->response->end($content);
+        }else{
+            $this->response->end();
+        }
     }
 
     public function status($statusCode)
