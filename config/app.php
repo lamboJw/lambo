@@ -4,7 +4,7 @@ $config = [
     'load_vendor' => true,
 
     // 是否记录debug信息
-    'debug' => false,
+    'debug' => true,
 
     // 记录debug信息的最高等级
     'debug_level' => LEVEL_ALL,

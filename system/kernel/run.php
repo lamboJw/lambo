@@ -126,7 +126,7 @@ function http_server_callback($request, $response, $route_map)
             }
         } else {
             $response->status(404);
-            $response->end();
+            $response->end('<h1>Page Not Found</h1>');
         }
     } catch (Throwable $e) {
         debug('ERROR', '捕获错误：' . swoole_last_error() . '， 错误信息：' . $e->getMessage());
