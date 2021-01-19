@@ -92,15 +92,13 @@ if ($server_type == CO_HTTP_SERVER) {
 //HTTP服务器处理请求函数
 function http_server_callback(\Swoole\Http\Request $request, \Swoole\Http\Response $response, $route_map)
 {
-    $response->end(json_encode(['ret'=>1, 'msg'=>'success', 'content'=>[]]));
-    return;
     //处理chrome请求favicon.ico
     if ($request->server['path_info'] == '/favicon.ico' || $request->server['request_uri'] == '/favicon.ico') {
         $response->sendfile(STATIC_PATH . '/common/images/favicon.ico');
         return;
     }
     Application::getInstance($request, $response);
-    try {
+    /*try {
         if (array_key_exists($request->server['request_uri'], $route_map)) {
             $route = $route_map[$request->server['request_uri']];
             $middleware_result = true;
@@ -143,7 +141,7 @@ function http_server_callback(\Swoole\Http\Request $request, \Swoole\Http\Respon
     }
     if (config('app', 'std_output_to_page')) {
         app()->ob_clean_all();    //使用标准输出到页面时，需要清除缓冲区
-    }
+    }*/
     Application::destroy();
     return;
 }
