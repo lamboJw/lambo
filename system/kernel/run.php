@@ -143,6 +143,7 @@ function http_server_callback(\Swoole\Http\Request $request, \Swoole\Http\Respon
         app()->ob_clean_all();    //使用标准输出到页面时，需要清除缓冲区
     }
     Application::destroy();
+    return;
 }
 
 //websocket服务器处理请求函数
