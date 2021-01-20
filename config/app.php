@@ -33,10 +33,10 @@ $config = [
     'server_type' => CO_HTTP_SERVER,
 
     // 标准输出是否输出到页面
-    'std_output_to_page' => false,
+    'std_output_to_page' => true,
 
     // 开启redis连接池
-    'enable_redis_pool' => true,
+    'enable_redis_pool' => false,
 
     // redis使用配置
     'redis_config_key' => 'default',

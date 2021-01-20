@@ -98,7 +98,7 @@ function http_server_callback(\Swoole\Http\Request $request, \Swoole\Http\Respon
         return;
     }
     Application::getInstance($request, $response);
-    /*try {
+    try {
         if (array_key_exists($request->server['request_uri'], $route_map)) {
             $route = $route_map[$request->server['request_uri']];
             $middleware_result = true;
@@ -106,7 +106,7 @@ function http_server_callback(\Swoole\Http\Request $request, \Swoole\Http\Respon
                 $mid_result = (new $middleware())->handle();
                 if ($mid_result !== true) {
                     $middleware_result = false;
-                    $response->end($mid_result);
+                    response()->end($mid_result);
                     break;
                 }
             }
@@ -117,17 +117,17 @@ function http_server_callback(\Swoole\Http\Request $request, \Swoole\Http\Respon
                         $class = new $route['class']();
                         call_user_func([$class, $route['func']]);
                     });
-                } else {
+	        } else {
                     //标准输出到控制台的写法
                     $class = new $route['class']();
                     call_user_func([$class, $route['func']]);
                     response()->end();
                 }
-            }
+	    }
         } else {
             response()->status(404);
             response()->end('<h1>Page Not Found</h1>');
-        }
+	}
     } catch (Throwable $e) {
         debug('ERROR', '捕获错误：' . swoole_last_error() . '， 错误信息：' . $e->getMessage());
         response()->status(500);
@@ -141,7 +141,7 @@ function http_server_callback(\Swoole\Http\Request $request, \Swoole\Http\Respon
     }
     if (config('app', 'std_output_to_page')) {
         app()->ob_clean_all();    //使用标准输出到页面时，需要清除缓冲区
-    }*/
+    }
     Application::destroy();
     return;
 }

@@ -19,7 +19,8 @@ class test
         $re = $model->getList(['id'=>[1,2,3]],"title");
         api_response(1,'success',$re);*/
         $redis = new BaseRedis();
-        $re = $redis->sadd('test',date("Y-m-d H:i:s"));
+	$re = $redis->sadd('test',date("Y-m-d H:i:s"));
+	debug('info',$re);
         api_response(1, 'success');
     }
 
