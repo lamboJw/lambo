@@ -1,44 +1,60 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "052afd622d02d7af7241b987ec4a35ce",
+    "content-hash": "cbe4533762f37e3f8313a792db8e6aff",
     "packages": [
         {
-            "name": "swoole/ide-helper",
-            "version": "4.5.10",
+            "name": "xiaoler/blade",
+            "version": "5.4.3",
             "source": {
                 "type": "git",
-                "url": "https://github.com/swoole/ide-helper.git",
-                "reference": "11d77b630ec63e426326439bea0c4b0460fb3a00"
+                "url": "https://github.com/XiaoLer/blade.git",
+                "reference": "b3a71e2e589e31956209e7f3d5ce6f9473e63a45"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/swoole/ide-helper/zipball/11d77b630ec63e426326439bea0c4b0460fb3a00",
-                "reference": "11d77b630ec63e426326439bea0c4b0460fb3a00",
-                "shasum": ""
+                "url": "https://api.github.com/repos/XiaoLer/blade/zipball/b3a71e2e589e31956209e7f3d5ce6f9473e63a45",
+                "reference": "b3a71e2e589e31956209e7f3d5ce6f9473e63a45",
+                "shasum": "",
+                "mirrors": [
+                    {
+                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
             },
-            "require-dev": {
-                "guzzlehttp/guzzle": "~6.5.0",
-                "laminas/laminas-code": "~3.4.0",
-                "squizlabs/php_codesniffer": "~3.5.0",
-                "symfony/filesystem": "~4.0"
+            "require": {
+                "php": ">=5.4.0"
             },
             "type": "library",
+            "autoload": {
+                "files": [
+                    "src/helpers.php"
+                ],
+                "psr-4": {
+                    "Xiaoler\\Blade\\": "src/"
+                }
+            },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "Apache-2.0"
+                "MIT"
             ],
             "authors": [
                 {
-                    "name": "Team Swoole",
-                    "email": "team@swoole.com"
+                    "name": "Scholer Liu",
+                    "email": "scholer_l@live.com"
                 }
             ],
-            "description": "IDE help files for Swoole.",
-            "time": "2020-12-27T05:03:52+00:00"
+            "description": "an independent version of laravel view template - blade",
+            "homepage": "http://0x1.im",
+            "support": {
+                "issues": "https://github.com/XiaoLer/blade/issues",
+                "source": "https://github.com/XiaoLer/blade"
+            },
+            "time": "2017-08-23T01:10:07+00:00"
         }
     ],
     "packages-dev": [],
@@ -47,6 +63,14 @@
     "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": []
+    "platform": {
+        "ext-swoole": "^4.6",
+        "php": ">7.4",
+        "ext-json": "^8.0",
+        "ext-mbstring": "^8.0",
+        "ext-redis": "^5.3",
+        "ext-pdo": "^8.0"
+    },
+    "platform-dev": [],
+    "plugin-api-version": "2.0.0"
 }
