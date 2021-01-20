@@ -33,7 +33,7 @@ $config = [
     'server_type' => CO_HTTP_SERVER,
 
     // 标准输出是否输出到页面
-    'std_output_to_page' => true,
+    'std_output_to_page' => false,
 
     // 开启redis连接池
     'enable_redis_pool' => false,

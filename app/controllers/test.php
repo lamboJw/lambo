@@ -15,11 +15,11 @@ class test
 
     public function index()
     {
-        $model = new example();
-        $data['db'] = $model->getList(['id'=>[1,2,3]],"title");
-        $redis = new BaseRedis();
-        $data['redis'] = $redis->sadd('test',date("Y-m-d H:i:s"));
-        api_response(1, 'success', $data);
+//        $model = new example();
+//        $data['db'] = $model->getList(['id'=>[1,2,3]],"name");
+//        $redis = new BaseRedis();
+//        $data['redis'] = $redis->sadd('test',date("Y-m-d H:i:s"));
+//        api_response(1, 'success', $data);
     }
 
     public function index2()

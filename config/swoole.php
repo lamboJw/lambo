@@ -29,10 +29,10 @@ $config = [
     // 服务器详细配置
     'server' => [
         // worker进程数量
-        'worker_num' => 1,
+        'worker_num' => 4,
 
         // reactor进程数量
-        'reactor_num' => 1,
+        'reactor_num' => 4,
 
         // worker进程执行N次请求后重启，避免内存泄露
         'max_request' => 10000,

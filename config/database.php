@@ -1,10 +1,10 @@
 <?php
 $config = [
     'default' => [
-        'host' => '127.0.0.1',
+        'host' => 'localhost',
         'port' => 3306,
         'username' => 'root',
-        'password' => 'jiawei1994',
+        'password' => 'admin',
         'database' => 'test',
         'charset' => 'utf8mb4',
         'unixSocket' => null,
