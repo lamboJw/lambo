@@ -117,17 +117,17 @@ function http_server_callback(\Swoole\Http\Request $request, \Swoole\Http\Respon
                         $class = new $route['class']();
                         call_user_func([$class, $route['func']]);
                     });
-	        } else {
+                } else {
                     //标准输出到控制台的写法
                     $class = new $route['class']();
                     call_user_func([$class, $route['func']]);
                     response()->end();
                 }
-	    }
+            }
         } else {
             response()->status(404);
             response()->end('<h1>Page Not Found</h1>');
-	}
+        }
     } catch (Throwable $e) {
         debug('ERROR', '捕获错误：' . swoole_last_error() . '， 错误信息：' . $e->getMessage());
         response()->status(500);
