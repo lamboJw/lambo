@@ -2,10 +2,10 @@
 $config = [
     'default' => [
         'host' => '127.0.0.1',
-        'port' => 3308,
+        'port' => 3306,
         'username' => 'root',
-        'password' => 'admin',
-        'database' => 'h5_sdk_plat',
+        'password' => 'jiawei1994',
+        'database' => 'test',
         'charset' => 'utf8mb4',
         'unixSocket' => null,
         'options' => [],

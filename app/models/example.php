@@ -9,7 +9,7 @@ use system\kernel\Model;
 class example extends Model
 {
     protected string $db = 'default';
-    protected string $tableName = 'task_center';
+    protected string $tableName = 'test';
     protected bool $timestamp = true;
 
 }
