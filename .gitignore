@@ -1,3 +1,4 @@
 vendor
 .idea
 static/logs
+static/view_cache
