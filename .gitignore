@@ -1,4 +1,4 @@
 vendor
 .idea
-static/logs1
-static/view_cache1
+static/logs
+static/view_cache
