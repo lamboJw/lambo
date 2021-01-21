@@ -11,6 +11,7 @@ define('SYS_KERNEL_PATH', SYSTEM_PATH . '/kernel');
 
 define('STATIC_NAME', 'static');
 define('STATIC_PATH', ROOT_PATH . '/' . STATIC_NAME);
+define('VIEW_CACHE_PATH', STATIC_PATH . '/view_cache');
 
 define('LEVEL_NONE', 0);
 define('LEVEL_ERROR', 1);

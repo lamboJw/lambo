@@ -38,7 +38,7 @@ $config = [
         'max_request' => 10000,
 
         // 最大允许连接数，默认 ulimit -n
-        'max_connection' => 2000,
+        'max_connection' => 10000,
 
         // 是否开启压缩
         'http_compression' => true,

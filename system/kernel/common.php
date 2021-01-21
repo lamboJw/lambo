@@ -266,3 +266,10 @@ if (!function_exists('server_type')) {
         return config('app', 'server_type');
     }
 }
+
+if (!function_exists('view')) {
+    function view($view, $data=[])
+    {
+        response(\system\kernel\View::getInstance()->make($view, $data)->render());
+    }
+}

@@ -1,11 +1,12 @@
 {
     "require": {
-        "ext-swoole": "^4.6",
-        "php": ">7.4",
-        "ext-json": "^8.0",
-        "ext-mbstring": "^8.0",
-        "ext-redis": "^5.3",
-        "ext-pdo": "^8.0",
-        "xiaoler/blade": "^5.4"
+        "ext-swoole": ">=4.5",
+        "php": ">=7",
+        "ext-json": ">=7",
+        "ext-mbstring": ">=7",
+        "ext-redis": "*",
+        "ext-pdo": ">=7",
+        "xiaoler/blade": "^5.4",
+        "swoole/ide-helper": "^4.6"
     }
 }

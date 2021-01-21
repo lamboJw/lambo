@@ -20,6 +20,7 @@ class test
 //        $redis = new BaseRedis();
 //        $data['redis'] = $redis->sadd('test',date("Y-m-d H:i:s"));
 //        api_response(1, 'success', $data);
+        view('test', ['a'=>1,'b'=>2]);
     }
 
     public function index2()
