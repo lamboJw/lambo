@@ -133,23 +133,23 @@ if (!function_exists('load_class')) {
 spl_autoload_register('load_class');
 
 if (!function_exists('library')) {
-    function library($name, ...$args)
+    function library($name)
     {
         static $_library = [];
         if(!isset($_library[$name])){
             $class = "\\app\\libraries\\{$name}";
-            $_library[$name] = new $class(...$args);
+            $_library[$name] = new $class();
         }
         return $_library[$name];
     }
 }
 if (!function_exists('helper')) {
-    function helper($name, ...$args)
+    function helper($name)
     {
         static $_helper = [];
         if(!isset($_helper[$name])){
             $class = "\\app\\helpers\\{$name}";
-            $_helper[$name] = new $class(...$args);
+            $_helper[$name] = new $class();
         }
         return $_helper[$name];
     }

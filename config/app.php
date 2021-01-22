@@ -27,8 +27,6 @@ $config = [
     /*
      * 启动服务器的类型
      * 异步风格SWOOLE_HTTP_SERVER 或 协程风格CO_HTTP_SERVER
-     * 协程风格速度快，但压测会有请求失败的
-     * 异步风格慢三分一，但请求失败的情况少很多
      */
     'server_type' => CO_HTTP_SERVER,
 

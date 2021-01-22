@@ -9,7 +9,14 @@ declare(strict_types=1);
  * @license  https://github.com/simple-swoole/simps/blob/master/LICENSE
  */
 namespace system\kernel;
-
+/**
+ * Class BaseRedis
+ * @package system\kernel
+ * @method array keys($patten)
+ * @method string get($key)
+ * @method bool set($key, $string)
+ * @method bool select($index)
+ */
 class BaseRedis
 {
     protected Redis $pool;
@@ -144,5 +151,20 @@ class BaseRedis
         $this->pool->close($this->connection);
 
         return $data;
+    }
+
+    public function __destruct(){
+        if(config('app', 'enable_redis_pool')){
+            $redis_config_key = config('app', 'redis_config_key');
+            $config = config('redis', $redis_config_key);
+            $this->connection = $this->pool->getConnection();
+            try{
+                $this->connection->select($config['db_index'] ?? 0);
+            } catch (\RedisException $e) {
+                $this->pool->close(null);
+                throw $e;
+            }
+            $this->pool->close($this->connection);
+        }
     }
 }

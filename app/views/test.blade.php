@@ -9,6 +9,5 @@
 </head>
 <body>
 <div>{{ $a }}</div>
-<p>{{$b}}</p>
 </body>
 </html>

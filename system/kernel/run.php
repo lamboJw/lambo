@@ -61,6 +61,12 @@ if ($server_type == CO_HTTP_SERVER) {
         $route_map = Router::load_routes();
         $server->handle('/', function ($request, $response) use ($route_map) {
             call_user_func('http_server_callback', $request, $response, $route_map);
+            /*if (config('app', 'enable_redis_pool')) {
+                $redis = new \system\kernel\BaseRedis();
+                $redis_config_key = config('app', 'redis_config_key');
+                $config = config('redis', $redis_config_key);
+                $redis->select($config['db_index'] ?? 0);
+            }*/
         });
         echo "协程http服务器启动\n";
         $server->start();
