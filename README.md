@@ -1,5 +1,5 @@
 # lambo
-这是一个基于swoole开发的简易MVC框架，参考了CI框架、laravel框架和simps框架进行开发。  
+这是一个基于swoole开发的简易MVC框架，参考了CI框架、laravel框架和simps框架进行开发。支持异步风格和协程风格两种HTTP服务器、MySQL和Redis连接池。  
 ## 运行环境
 1. PHP > 7.4
 2. Composer
