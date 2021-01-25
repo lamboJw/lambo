@@ -125,7 +125,7 @@ if (!function_exists('library')) {
     function library($name)
     {
         static $_library = [];
-        if(!isset($_library[$name])){
+        if (!isset($_library[$name])) {
             $class = "\\app\\libraries\\{$name}";
             $_library[$name] = new $class();
         }
@@ -136,7 +136,7 @@ if (!function_exists('helper')) {
     function helper($name)
     {
         static $_helper = [];
-        if(!isset($_helper[$name])){
+        if (!isset($_helper[$name])) {
             $class = "\\app\\helpers\\{$name}";
             $_helper[$name] = new $class();
         }
@@ -148,12 +148,12 @@ if (!function_exists('autoload_lib_and_helper')) {
     function autoload_lib_and_helper()
     {
         $autoload_config = config('autoload');
-        if(!empty($autoload_config['libraries'])){
+        if (!empty($autoload_config['libraries'])) {
             foreach ($autoload_config['libraries'] as $class) {
                 library($class);
             }
         }
-        if(!empty($autoload_config['helpers'])){
+        if (!empty($autoload_config['helpers'])) {
             foreach ($autoload_config['helpers'] as $class) {
                 helper($class);
             }
@@ -171,7 +171,7 @@ if (!function_exists('app')) {
 if (!function_exists('request')) {
     function request(...$keys)
     {
-        if(!\system\kernel\Application::isInstantiated()){
+        if (!\system\kernel\Application::isInstantiated()) {
             throw new RuntimeException('Application未实例化');
         }
         if (empty($keys)) {
@@ -186,7 +186,7 @@ if (!function_exists('request')) {
 if (!function_exists('response')) {
     function response($data = '')
     {
-        if(!\system\kernel\Application::isInstantiated()){
+        if (!\system\kernel\Application::isInstantiated()) {
             throw new RuntimeException('Application未实例化');
         }
         if (empty($data)) {
@@ -200,7 +200,7 @@ if (!function_exists('response')) {
 if (!function_exists('ws_response')) {
     function ws_response($data = '', $opcode = WEBSOCKET_OPCODE_TEXT, $flags = true)
     {
-        if(!\system\kernel\Application::isInstantiated()){
+        if (!\system\kernel\Application::isInstantiated()) {
             throw new RuntimeException('Application未实例化');
         }
         if (empty($data)) {
@@ -214,7 +214,7 @@ if (!function_exists('ws_response')) {
 if (!function_exists('server')) {
     function server($key = '')
     {
-        if(!\system\kernel\Application::isInstantiated()){
+        if (!\system\kernel\Application::isInstantiated()) {
             throw new RuntimeException('Application未实例化');
         }
         return app()->request()->server($key);
@@ -257,7 +257,7 @@ if (!function_exists('server_type')) {
 }
 
 if (!function_exists('view')) {
-    function view($view, $data=[])
+    function view($view, $data = [])
     {
         response(\system\kernel\View::getInstance()->make($view, $data)->render());
     }

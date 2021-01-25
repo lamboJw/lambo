@@ -34,7 +34,7 @@ $config = [
     'std_output_to_page' => false,
 
     // 开启redis连接池
-    'enable_redis_pool' => true,
+    'enable_redis_pool' => false,
 
     // redis使用配置
     'redis_config_key' => 'default',
