@@ -101,40 +101,35 @@ function http_server_callback(\Swoole\Http\Request $request, \Swoole\Http\Respon
     try {
         if (array_key_exists($request->server['request_uri'], $route_map)) {
             $route = $route_map[$request->server['request_uri']];
-            $middleware_result = true;
             foreach ($route['middleware'] as $middleware) {
                 $mid_result = (new $middleware())->handle();
                 if ($mid_result !== true) {
-                    $middleware_result = false;
                     response()->end($mid_result);
-                    break;
                 }
             }
-            if ($middleware_result) {
-                if (config('app', 'std_output_to_page')) {
-                    //输出标准输出到页面时的写法
-                    response()->return(function () use ($route) {
-                        $class = new $route['class']();
-                        call_user_func([$class, $route['func']]);
-                    });
-                } else {
-                    //标准输出到控制台的写法
+            if (config('app', 'std_output_to_page')) {
+                //输出标准输出到页面时的写法
+                response()->return(function () use ($route) {
                     $class = new $route['class']();
                     call_user_func([$class, $route['func']]);
-                    response()->end();
-                }
+                });
+            } else {
+                //标准输出到控制台的写法
+                $class = new $route['class']();
+                call_user_func([$class, $route['func']]);
+                response()->end();
             }
         } else {
             response()->status(404);
             response()->end('<h1>Page Not Found</h1>');
         }
     } catch (Throwable $e) {
-        if($e instanceof \Swoole\ExitException && $e->getStatus() == SWOOLE_RESPONSE_EXIT){
+        if ($e instanceof \Swoole\ExitException && $e->getStatus() == SWOOLE_RESPONSE_EXIT) {
             //如果是响应退出，且开启了标准输出到页面，因为有一个ob_start未闭合，所以要执行一次
             if (config('app', 'std_output_to_page')) {
                 app()->ob_get_clean();
             }
-        }else{
+        } else {
             debug('ERROR', '捕获错误：' . swoole_last_error() . '， 错误信息：' . $e->getMessage());
             $response->status(500);
             if (config('app', 'debug')) {

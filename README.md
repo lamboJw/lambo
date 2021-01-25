@@ -9,9 +9,11 @@
 3. mbstring
 4. Swoole >= 4.5
 ## 安装
-+ `git clone https://github.com/lamboJw/frame_test.git`
-+ `cd frame_test`
-+ `composer install`
+```
+git clone https://github.com/lamboJw/frame_test.git
+cd frame_test
+composer install
+```
 ## 快速开始
 + `php run_server.php` ，控制台输出协程http服务器启动。
 + 本地浏览器访问 `http://127.0.0.1:10086/test` 。 
@@ -227,11 +229,11 @@ $finish：是否发送完成。
 + `close()`  
 关闭 WebSocket 连接。
 
-### Model类
+### 数据库Model
 移植[Simps](https://simps.io)框架的BaseModel模块，基于PDO连接MySQL，可以使用连接池，增加短连接模式，增加了一些功能。使用Medoo框架，基本的使用方法，请查看[Medoo文档](https://medoo.lvtao.net/1.2/doc.php) 。  
-+ 创建model的时候，继承该类。  
++ 创建model时，需要继承Model类：`class example_model extends Model`  
 + 根据情况，覆盖`$db`、`$tableName`、`$keyName`。  
-  `$db`：`config/database.php`配置中，其中一个配置的key。  
+  `$db`：数据库配置，`config/database.php`配置中其中一个key。  
   `$tableName`：表名。  
   `$keyName`：主键名。  
   
@@ -240,7 +242,7 @@ $finish：是否发送完成。
   `$add_time_col`：创建时间的列名。  
   `$edit_time_col`：更新时间的列名。  
   `$time_type`： 更新时间的类型。`MODEL_DATETIME`日期时间，`MODEL_DATE`日期，`MODEL_UNIX_TIMESTAMP`时间戳。  
-#### 主要方法
+#### 额外方法
 + `getInfo($where, $columns = "*", $join = null)`  
   获取单条数据。  
   $where：查询条件，如果类型不为array，则当作是主键查询。    
@@ -295,5 +297,63 @@ $finish：是否发送完成。
   $where：查询条件。  
   $data：要更新或插入的数据。
   
-### BaseRedis类  
-移植[Simps](https://simps.io)框架的BaseRedis模块，可以使用连接池，增加短连接模式。在连接池模式下，在类销毁时，会自动将库切换回`config/redis.php`配置文件的默认库。  
+### Redis  
+移植[Simps](https://simps.io)框架的BaseRedis模块，可以使用连接池，增加短连接模式。在连接池模式下，在类销毁时，会自动将库切换回`config/redis.php`配置文件的默认库。原代码为每执行一次命令，都做一次连接池池get和push，现在改为构造函数连接池get，析构函数执行连接池push。
+#### 使用
+实例化类之后，可以使用Redis扩展中的所有方法。  
+ ```
+$redis = new BaseRedis();
+$redis->get('key1');
+```
+ 
+### 中间件
+编写的中间件需要放在`app/middleware`文件夹下，实现`Middleware`抽象类。路由中定义的中间件，会自动执行handle方法。当执行通过时，请返回`true`。不通过时，返回的内容会直接发送到浏览器，且结束运行。
+
+### 定义路由
+路由文件存放在`app/routes`文件夹下。`default.php`文件下的路由，没有前置路径。除`default.php`文件外，其他文件内的路由，都会根据文件名作为前置路径，例：  
+`admin.php`文件下存在一个路由，地址为`test1`，服务器监听`localhost:80`，则实际访问地址为`http://localhost/admin/test1` 。  
++ 定义单一路由  
+`route()`：  
+$path：路由地址  
+$controller：控制器名  
+$func：方法名  
+使用：  
+```
+$router = new Router();
+$router->route('/test','test','index');
+```
+
++ 使用中间件  
+`middleware()`：  
+$middleware： 该路由需要使用的中间件名称。中间件名称为`app/middleware.php`中的key。  
+使用：  
+```
+$router = new Router();
+$router->middleware(['test'])->route('/test','test','index');
+```
+
++ 定义一组路由
+当多个路由都需要使用同一组中间件，可以使用这个。  
+`group()`：  
+$middleware： 和`middleware()`方法接收参数一样。  
+$routes：多个路由类实例组成的数组。  
+使用：  
+```
+$router = new Router();
+$router->group(['test'],[
+    (new Route('/test2','test','index2')),
+]);
+```
+
+### 渲染视图
+框架使用了blade模版引擎，来自 [xiaoLer/blade](https://github.com/XiaoLer/blade) 。blade模版引擎使用方法请查看 [laravel文档](https://learnku.com/docs/laravel/8.x/blade/9377) 。  
+几乎所有 Blade 的特性都被保留了，但是一些专属于 Laravel 的特征被移除了：  
++ @inject @can @cannot @lang 关键字被移除了
++ 不支持事件和中间件
+
+#### 使用
+视图文件放在`app/views`文件夹下。在控制器中，使用view()方法直接渲染。  
++ `view()`  
+$view：视图文件路径  
+$data：传递到视图的变量  
+`view('test', ['a'=>'Hello World']);`
