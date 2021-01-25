@@ -15,7 +15,6 @@ class test
     {
         $redis = new BaseRedis();
         $redis->select(3);
-        sleep(10);
         $redis->set('test', '123');
         view('test', ['a'=>'Hello World']);
     }
