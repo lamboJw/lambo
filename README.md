@@ -1,4 +1,4 @@
-# frame_test
+# lambo
 这是一个基于swoole开发的简易MVC框架，参考了CI框架、laravel框架和simps框架进行开发。  
 ## 运行环境
 1. PHP > 7.4
@@ -10,8 +10,8 @@
 4. Swoole >= 4.5
 ## 安装
 ```
-git clone https://github.com/lamboJw/frame_test.git
-cd frame_test
+git clone https://github.com/lamboJw/lambo.git
+cd lambo
 composer install
 ```
 ## 快速开始
