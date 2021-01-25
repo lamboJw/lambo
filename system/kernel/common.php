@@ -23,17 +23,6 @@ if (!function_exists('is_php')) {
 }
 
 if (!function_exists('is_really_writable')) {
-    /**
-     * Tests for file writability
-     *
-     * is_writable() returns TRUE on Windows servers when you really can't write to
-     * the file, based on the read-only attribute. is_writable() is also unreliable
-     * on Unix servers if safe_mode is on.
-     *
-     * @link    https://bugs.php.net/bug.php?id=54709
-     * @param string
-     * @return    bool
-     */
     function is_really_writable($file)
     {
         // If we're on a Unix server with safe_mode off we call is_writable
@@ -64,7 +53,7 @@ if (!function_exists('is_really_writable')) {
 }
 
 if (!function_exists('get_dir_files')) {
-    function get_dir_files($path)
+    function get_dir_files($path, $ext = 'php')
     {
         $file_list = [];
         $path = rtrim($path, '/') . '/';
@@ -81,8 +70,8 @@ if (!function_exists('get_dir_files')) {
                 if (!isset($file_info['extension'])) {
                     continue;
                 }
-                $ext = strtolower($file_info['extension']);
-                if ($ext == 'php') {   //如果是php文件，就插入文件路径到file_list
+                $extension = strtolower($file_info['extension']);
+                if (empty($ext) || $extension == $ext) {
                     $file_list[$file_info['filename']] = $file_path;
                 }
             }

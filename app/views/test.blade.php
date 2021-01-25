@@ -8,6 +8,6 @@
     <title>Document</title>
 </head>
 <body>
-<div>{{ $a }}</div>
+<pre>{{ $a }}</pre>
 </body>
 </html>

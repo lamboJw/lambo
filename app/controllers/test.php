@@ -2,8 +2,6 @@
 
 namespace app\controllers;
 
-use app\logic\testLogic;
-use app\models\example;
 use system\kernel\BaseRedis;
 
 class test
@@ -16,15 +14,14 @@ class test
     public function index()
     {
         $redis = new BaseRedis();
-        $redis->select(2);
-        $redis->set('test',1);
-        $redis->set('test',2);
+        $redis->select(3);
+        sleep(10);
+        $redis->set('test', '123');
         view('test', ['a'=>'Hello World']);
     }
 
     public function index2(){
         $redis = new BaseRedis();
-//        $redis->select(1);
-        $redis->set('test',3);
+        $redis->set('test', 'abc');
     }
 }

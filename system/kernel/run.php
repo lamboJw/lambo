@@ -61,12 +61,6 @@ if ($server_type == CO_HTTP_SERVER) {
         $route_map = Router::load_routes();
         $server->handle('/', function ($request, $response) use ($route_map) {
             call_user_func('http_server_callback', $request, $response, $route_map);
-            /*if (config('app', 'enable_redis_pool')) {
-                $redis = new \system\kernel\BaseRedis();
-                $redis_config_key = config('app', 'redis_config_key');
-                $config = config('redis', $redis_config_key);
-                $redis->select($config['db_index'] ?? 0);
-            }*/
         });
         echo "协程http服务器启动\n";
         $server->start();
@@ -135,15 +129,20 @@ function http_server_callback(\Swoole\Http\Request $request, \Swoole\Http\Respon
             response()->end('<h1>Page Not Found</h1>');
         }
     } catch (Throwable $e) {
-        debug('ERROR', '捕获错误：' . swoole_last_error() . '， 错误信息：' . $e->getMessage());
-        response()->status(500);
-        if (config('app', 'debug')) {
-            $return = ['msg' => $e->getMessage(), 'request' => $request];
-            response()->json($return);
-        } else {
-            response('服务器错误');
+        if($e instanceof \Swoole\ExitException && $e->getStatus() == SWOOLE_RESPONSE_EXIT){
+            //如果是响应退出，且开启了标准输出到页面，因为有一个ob_start未闭合，所以要执行一次
+            if (config('app', 'std_output_to_page')) {
+                app()->ob_get_clean();
+            }
+        }else{
+            debug('ERROR', '捕获错误：' . swoole_last_error() . '， 错误信息：' . $e->getMessage());
+            $response->status(500);
+            if (config('app', 'debug')) {
+                $response->end(json_encode(['msg' => $e->getMessage(), 'request' => $request]));
+            } else {
+                $response->end('<h1>500 服务器错误</h1>');
+            }
         }
-        response()->end();
     }
     if (config('app', 'std_output_to_page')) {
         app()->ob_clean_all();    //使用标准输出到页面时，需要清除缓冲区

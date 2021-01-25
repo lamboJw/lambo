@@ -8,28 +8,9 @@ class Response
 {
     private \Swoole\Http\Response $response;
 
-    /**
-     * 响应已结束标志
-     * @var bool
-     */
-    private bool $is_end = false;
-
     public function __construct(\Swoole\Http\Response $response)
     {
         $this->response = $response;
-    }
-
-    /**
-     * 判断是否已经结束响应
-     * @return mixed
-     */
-    private function is_end()
-    {
-        if ($this->is_end) {
-            debug('NOTICE', 'Response不可用，也许它已经end()或detach()');
-//            debug('NOTICE', Coroutine::getBackTrace(Coroutine::getCid(), DEBUG_BACKTRACE_IGNORE_ARGS));
-        }
-        return $this->is_end;
     }
 
     /**
@@ -39,56 +20,38 @@ class Response
      */
     public function json($data)
     {
-        if ($this->is_end()) {
-            return null;
-        }
         $this->write(json_encode($data));
     }
 
     public function end($content = '')
     {
-        if ($this->is_end()) {
-            return null;
-        }
-        $this->is_end = true;
-        if(!empty($content)){
+        if (!empty($content)) {
             $this->response->end($content);
-        }else{
+        } else {
             $this->response->end();
         }
+        exit(SWOOLE_RESPONSE_EXIT); //响应完直接直接退出
     }
 
     public function status($statusCode)
     {
-        if ($this->is_end()) {
-            return null;
-        }
         $this->response->status($statusCode);
     }
 
     public function sendfile($filename, $offset = null, $length = null)
     {
-        if ($this->is_end()) {
-            return null;
-        }
         $this->response->sendfile($filename, $offset, $length);
     }
 
     public function redirect($location, $http_code = null)
     {
-        if ($this->is_end()) {
-            return null;
-        }
-        $this->is_end = true;
         $this->response->redirect($location, $http_code);
+        exit(SWOOLE_RESPONSE_EXIT); //重定向后直接直接退出
     }
 
     public function write($content)
     {
-        if ($this->is_end()) {
-            return null;
-        }
-        $this->response->write($content);
+        return $this->response->write($content);
     }
 
     /**
@@ -100,29 +63,21 @@ class Response
         app()->ob_start();
         call_user_func($func);
         $output = app()->ob_get_clean();
-        if (!$this->is_end()) {
-            if (!empty($output)) {
-                $this->response->write($output);
-            }
-            $this->end();
-        } else {
-            debug('INFO', $output);
-        }
+        $this->end($output);
     }
 
     public function cookie($name, $value = null, $expires = null, $path = null, $domain = null, $secure = null, $httponly = null, $samesite = null, $priority = null)
     {
-        if ($this->is_end()) {
-            return null;
-        }
         $this->response->cookie($name, $value, $expires, $path, $domain, $secure, $httponly, $samesite, $priority);
     }
 
-    public function header($key, $value, $ucwords = null)
+    public function rawCookie($name, $value = null, $expires = null, $path = null, $domain = null, $secure = null, $httponly = null, $samesite = null, $priority = null)
     {
-        if ($this->is_end()) {
-            return null;
-        }
-        $this->response->header($key, $value, $ucwords);
+        $this->response->rawcookie($name, $value, $expires, $path, $domain, $secure, $httponly, $samesite, $priority);
+    }
+
+    public function header($key, $value, $format = null)
+    {
+        $this->response->header($key, $value, $format);
     }
 }

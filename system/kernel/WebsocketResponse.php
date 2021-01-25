@@ -49,12 +49,12 @@ class WebsocketResponse
     /**
      * @param string|object $data 发送数据帧（类型为Frame时，忽略后面两个参数）
      * @param int $opcode 数据帧类型，WEBSOCKET_OPCODE_TEXT（文本内容） 或 WEBSOCKET_OPCODE_BINARY（二进制内容）
-     * @param bool $flags
+     * @param bool $finish 是否发送完成
      * @return mixed
      */
-    public function push($data, $opcode = WEBSOCKET_OPCODE_TEXT, $flags = true)
+    public function push($data, $opcode = WEBSOCKET_OPCODE_TEXT, $finish = true)
     {
-        return $this->response->push($data, $opcode, $flags);
+        return $this->response->push($data, $opcode, $finish);
     }
 
     public function close()

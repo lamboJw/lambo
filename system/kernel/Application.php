@@ -79,7 +79,7 @@ class Application
     /**
      * 设置全局变量
      * @param string|array $key 变量名，可以传数组一次保存多个
-     * @param string $value 变量值
+     * @param mixed $value 变量值
      */
     public function set($key, $value = '')
     {
