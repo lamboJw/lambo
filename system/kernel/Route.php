@@ -28,7 +28,7 @@ class Route
     public function middleware(array $middleware)
     {
         foreach ($middleware as $item) {
-            $md_class = config('middleware', $item, null);
+            $md_class = config("middleware.{$item}", null);
             if ($md_class === null) {
                 continue;
             }

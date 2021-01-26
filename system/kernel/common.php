@@ -99,14 +99,20 @@ if (!function_exists('config_all')) {
 }
 
 if (!function_exists('config')) {
-    function config($name, $item = '', $default = null)
+    function config($name, $default = null)
     {
-        $config_all = &config_all();
-        if (!empty($item) || $item === 0) {
-            return $config_all[$name][$item] ?? $default;
-        } else {
-            return $config_all[$name] ?? $default;
+        $config = config_all();
+        if(empty($name)){
+            return null;
         }
+        $name_arr = explode('.', $name);
+        foreach ($name_arr as $item){
+            if($config == null){
+                break;
+            }
+            $config = $config[$item] ?? null;
+        }
+        return $config == null ? $default : $config;
     }
 }
 
@@ -246,13 +252,6 @@ if (!function_exists('debug')) {
     function debug($level, $message)
     {
         \system\kernel\Debug::getInstance()->debug($level, $message);
-    }
-}
-
-if (!function_exists('server_type')) {
-    function server_type()
-    {
-        return config('app', 'server_type');
     }
 }
 

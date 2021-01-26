@@ -7,6 +7,7 @@
         "ext-redis": "*",
         "ext-pdo": "*",
         "xiaoler/blade": "^5.4",
-        "swoole/ide-helper": "^4.6"
+        "swoole/ide-helper": "^4.6",
+        "ext-posix": "*"
     }
 }

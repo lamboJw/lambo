@@ -25,7 +25,7 @@ class Redis
 
     private function __construct(array $config)
     {
-        if (config('app', 'enable_redis_pool')) {
+        if (config('app.enable_redis_pool')) {
             if (empty($this->pools)) {
                 $this->config = array_replace_recursive($this->config, $config);
                 $this->pools = new RedisPool(
@@ -75,7 +75,7 @@ class Redis
 
     public static function getInstance($config = null)
     {
-        if (config('app', 'enable_redis_pool')) {
+        if (config('app.enable_redis_pool')) {
             if (empty(self::$instance)) {
                 if (empty($config)) {
                     throw new RuntimeException('redis config empty');
@@ -88,15 +88,15 @@ class Redis
 
             return self::$instance;
         } else {
-            $redis_config_key = config('app', 'redis_config_key');
-            $config = config('redis', $redis_config_key);
+            $redis_config_key = config('app.redis_config_key');
+            $config = config("redis.{$redis_config_key}");
             return new self($config);
         }
     }
 
     public function getConnection()
     {
-        if (config('app', 'enable_redis_pool')) {
+        if (config('app.enable_redis_pool')) {
             return $this->pools->get();
         } else {
             return $this->class;
@@ -105,7 +105,7 @@ class Redis
 
     public function close($connection = null)
     {
-        if (config('app', 'enable_redis_pool')) {
+        if (config('app.enable_redis_pool')) {
             $this->pools->put($connection);
         }else{
             $this->class->close();

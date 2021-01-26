@@ -228,7 +228,7 @@ class Model extends BaseModel
      */
     public function columns()
     {
-        $config = config('database', $this->db);
+        $config = config("database.{$this->db}");
         $table_schema = $config['database'] ?? 'test';
         $result = $this->query("select COLUMN_NAME from information_schema.COLUMNS where table_name = '{$this->tableName}' and table_schema = '{$table_schema}';")->fetchAll();
         $columns = [];

@@ -34,7 +34,7 @@ class PDO
 
     private function __construct(array $config)
     {
-        if (config('app', 'enable_mysql_pool')) {
+        if (config('app.enable_mysql_pool')) {
             if (empty($this->pools)) {
                 $this->config = array_replace_recursive($this->config, $config);
                 $this->pools = new PDOPool(
@@ -79,7 +79,7 @@ class PDO
 
     public static function getInstance($db, $config = null)
     {
-        if (config('app', 'enable_mysql_pool')) {
+        if (config('app.enable_mysql_pool')) {
             if (empty(self::$instance[$db])) {
                 if (empty($config)) {
                     throw new RuntimeException('pdo config empty');
@@ -98,7 +98,7 @@ class PDO
 
     public function getConnection()
     {
-        if (config('app', 'enable_mysql_pool')) {
+        if (config('app.enable_mysql_pool')) {
             return $this->pools->get();
         } else {
             return $this->class;
@@ -107,7 +107,7 @@ class PDO
 
     public function close($connection = null)
     {
-        if (config('app', 'enable_mysql_pool')) {
+        if (config('app.enable_mysql_pool')) {
             $this->pools->put($connection);
         }
     }

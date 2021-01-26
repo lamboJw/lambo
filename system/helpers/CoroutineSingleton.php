@@ -18,7 +18,7 @@ trait CoroutineSingleton
 
     static function getInstance(...$args)
     {
-        if (config('app', 'server_type') == CO_HTTP_SERVER) {
+        if (config('app.server_type') == CO_HTTP_SERVER) {
             $context = Coroutine::getContext();
             if (!isset($context[self::$class_key])) {
                 $context[self::$class_key] = new static(...$args);
@@ -39,7 +39,7 @@ trait CoroutineSingleton
     }
 
     static function isInstantiated(){
-        if (config('app', 'server_type') == CO_HTTP_SERVER) {
+        if (config('app.server_type') == CO_HTTP_SERVER) {
             $context = Coroutine::getContext();
             return isset($context[self::$class_key]);
         }else{
@@ -50,7 +50,7 @@ trait CoroutineSingleton
 
     static function destroy()
     {
-        if (config('app', 'server_type') == CO_HTTP_SERVER) {
+        if (config('app.server_type') == CO_HTTP_SERVER) {
             $context = Coroutine::getContext();
             unset($context[self::$class_key]);
         } else {

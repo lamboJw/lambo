@@ -19,7 +19,7 @@ class Application
 
     private function __construct($request, $response)
     {
-        if (server_type() == CO_HTTP_SERVER) {
+        if (config('app.server_type') == CO_HTTP_SERVER) {
             $this->context = Coroutine::getContext();
         } else {
             $this->context = [];
@@ -27,7 +27,7 @@ class Application
         $this->context['ob_count'] = 0;     //缓冲区计数
         $this->set_request($request);
         $this->set_response($response);
-        if(config('swoole', 'websocket')['open_websocket'] ?? false){
+        if(config('swoole.websocket.open_websocket', false)){
             $this->set_websocket_response($response);
         }
     }
@@ -130,7 +130,7 @@ class Application
             log_message('NOTICE', "有未闭合缓冲区{$this->context['ob_count']}个");
             for ($i = $this->context['ob_count']; $i > 0; $i--) {
                 $this->context['ob_count']--;
-                config('app', 'debug') ? ob_end_flush() : ob_end_clean();
+                config('app.debug') ? ob_end_flush() : ob_end_clean();
             }
         }
     }

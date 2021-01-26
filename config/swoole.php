@@ -35,7 +35,7 @@ $config = [
         'reactor_num' => 4,
 
         // worker进程执行N次请求后重启，避免内存泄露
-        'max_request' => 10000,
+        'max_request' => 10,
 
         // 最大允许连接数，默认 ulimit -n
         // 当实际连接数高时，适当调高ulimit -n，同时修改该选项

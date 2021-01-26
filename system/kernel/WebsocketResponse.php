@@ -36,7 +36,7 @@ class WebsocketResponse
         } else if ($frame === false) {
             debug('INFO', 'websocket错误 : ' . swoole_last_error());
             return false;
-        } elseif ($frame->data == config('swoole', 'websocket')['close_command'] ?? 'close' || get_class($frame) === \Swoole\WebSocket\CloseFrame::class) {
+        } elseif ($frame->data == config('swoole.websocket.close_command', 'close') || get_class($frame) === \Swoole\WebSocket\CloseFrame::class) {
             debug('INFO', '客户端发出关闭指令');
             unset(self::$pool[$this->res_id]);
             $this->response->close();

@@ -173,9 +173,9 @@ class BaseRedis
     }
 
     public function __destruct(){
-        if(config('app', 'enable_redis_pool')){
-            $redis_config_key = config('app', 'redis_config_key');
-            $config = config('redis', $redis_config_key);
+        if(config('app.enable_redis_pool')){
+            $redis_config_key = config('app.redis_config_key');
+            $config = config("redis.{$redis_config_key}");
             try{
                 $this->connection->select($config['db_index'] ?? 0);
             } catch (\RedisException $e) {
