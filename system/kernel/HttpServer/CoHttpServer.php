@@ -13,7 +13,7 @@ class CoHttpServer extends HttpServerBase
     protected int $max_request;
     protected int $pid;
     protected Process\Pool $pool;
-    public function __construct($pool)
+    public function __construct($pool, $workerId)
     {
         parent::__construct();
         $this->pid = posix_getpid();
@@ -22,7 +22,8 @@ class CoHttpServer extends HttpServerBase
         if (Co::getPcid() == false) {
             throw new \RuntimeException('协程风格HTTP服务器不能运行在非协程容器内');
         }
-        $this->server = new Server($this->http_config['host'] ?? '127.0.0.1', $this->http_config['port'] ?? '10086', $this->http_config['ssl'] ?? false);
+        $port = isset($this->http_config['port']) ? $this->http_config['port']+$workerId : 10086;
+        $this->server = new Server($this->http_config['host'] ?? '127.0.0.1', $port, $this->http_config['ssl'] ?? false);
         $this->max_request = $this->server_config['max_request'] ?? 1000;
     }
 
