@@ -43,7 +43,7 @@ class Server
         $workerNum = config('swoole.server.worker_num', 1);
         $pool = new Pool($workerNum, 0, null, true);
         $pool->on('WorkerStart', function ($pool, $workerId) {
-            $server = new CoHttpServer($pool, $workerId);
+            $server = new CoHttpServer($pool);
             Process::signal(SIGTERM, function () use ($server) {
                 $server->shutdown();
             });
