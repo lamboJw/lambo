@@ -22,8 +22,7 @@ class CoHttpServer extends HttpServerBase
         if (Co::getPcid() == false) {
             throw new \RuntimeException('协程风格HTTP服务器不能运行在非协程容器内');
         }
-        $port = isset($this->http_config['port']) ? $this->http_config['port']+$workerId : 10086;
-        $this->server = new Server($this->http_config['host'] ?? '127.0.0.1', $port, $this->http_config['ssl'] ?? false);
+        $this->server = new Server($this->http_config['host'] ?? '127.0.0.1', $this->http_config['port'] ?? '10086', $this->http_config['ssl'] ?? false, true);
         $this->max_request = $this->server_config['max_request'] ?? 1000;
     }
 
