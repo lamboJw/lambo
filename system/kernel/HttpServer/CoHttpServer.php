@@ -47,10 +47,10 @@ class CoHttpServer extends HttpServerBase
     public function check_request($response){
         if($this->cur_request < $this->max_request){
             $this->cur_request++;
-//            echo "Worker:{$this->pid},request:{$this->cur_request}\n";
+            echo "Worker:{$this->pid},request:{$this->cur_request}\n";
 //            return true;
         }else{
-//            echo "Worker:{$this->pid},request:full\n";
+            echo "Worker:{$this->pid},request:full\n";
             $process = $this->pool->getProcess();
             $process->kill($this->pid, SIGTERM);
             /*$response->status(500);
@@ -62,7 +62,7 @@ class CoHttpServer extends HttpServerBase
     public function shutdown()
     {
         if($this->cur_request >= $this->max_request){
-//            echo "Worker:{$this->pid},server shutdown\n";
+            echo "Worker:{$this->pid},server shutdown\n";
             $this->server->shutdown();
         }
     }
