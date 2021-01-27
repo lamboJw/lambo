@@ -35,7 +35,8 @@ $config = [
         'reactor_num' => 4,
 
         // worker进程执行N次请求后重启，避免内存泄露
-        'max_request' => 10,
+        // 协程风格下，0为不限制
+        'max_request' => 0,
 
         // 最大允许连接数，默认 ulimit -n
         // 当实际连接数高时，适当调高ulimit -n，同时修改该选项
@@ -48,13 +49,14 @@ $config = [
         'http_compression_level' => 2,
 
         // 数据包分发策略，1：轮询，2：固定，3：抢占，4：IP，5、UID，6：stream
+        // 仅当异步风格SWOOLE_PROCESS时有效
         'dispatch_mode' => 3,
 
-        // 文件根目录
+        // 项目根目录
         'document_root' => ROOT_PATH,
 
         // 开启静态文件请求处理功能
-        'enable_static_handler' => false,
+        'enable_static_handler' => true,
 
         // 静态文件路径
         'static_handler_locations' => ['/' . STATIC_NAME],

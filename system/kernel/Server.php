@@ -1,22 +1,21 @@
 <?php
-
+/**
+ * 服务器
+ */
 
 namespace system\kernel;
 
 use Swoole\Process\Pool;
 use Swoole\Process;
-use Swoole\lock;
 use system\kernel\HttpServer\CoHttpServer;
 use system\kernel\HttpServer\SwooleHttpServer;
 use Throwable;
 
 class Server
 {
-    public function __construct()
-    {
-
-    }
-
+    /**
+     * 根据服务器类型启动http服务器
+     */
     public function run_http_server()
     {
         switch (config('app.server_type')) {
@@ -35,6 +34,9 @@ class Server
         }
     }
 
+    /**
+     * 协程风格
+     */
     private function co_http_server()
     {
         if (config('swoole.server.daemonize', false)) {
@@ -57,6 +59,9 @@ class Server
         $pool->start();
     }
 
+    /**
+     * 异步风格
+     */
     private function swoole_http_server()
     {
         $server = new SwooleHttpServer();
