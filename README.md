@@ -66,10 +66,9 @@ _\* 注意：swoole的配置如果不在配置文件里，可自行增加，具�
 + `&config_all()`  
 获取所有配置文件信息，以文件名为key。修改元素会直接改变已加载配置的值，谨慎修改。
 
-+ `config($name, $item = '', $default = null)`  
++ `config($name, $default = null)`  
 获取某一配置文件的内容。  
-$name：文件名。  
-$item：不传时，返回该文件下所有配置，传值时返回对应的配置。  
+$name：配置项路径，例如：`app.php`文件下的`server_type`配置，使用`app.server_type`。   
 $default：如果$item配置不存在时，返回的默认值。
 
 + `library($name)` 和 `helper($name)`
@@ -357,3 +356,18 @@ $router->group(['test'],[
 $view：视图文件路径  
 $data：传递到视图的变量  
 `view('test', ['a'=>'Hello World']);`
+
+### HTTP服务器
+使用`app.server_type`来控制启动的HTTP服务器类型。
+#### 协程风格
+使用进程池+协程服务器实现，类似异步风格的BASE模式，多个子进程开启相同的纯协程HTTP服务器，对同一端口监听，争抢请求。  
+目前支持的`swoole.server`配置项有：
++ worker_num
++ max_request
++ enable_static_handler
++ document_root
++ static_handler_locations
++ daemonize
+
+#### 异步风格
+使用异步风格服务器，`swoole.server`所有配置项都能使用，默认使用SWOOLE_BASE模式。

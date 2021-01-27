@@ -52,13 +52,13 @@ $config = [
         // 仅当异步风格SWOOLE_PROCESS时有效
         'dispatch_mode' => 3,
 
-        // 项目根目录
-        'document_root' => ROOT_PATH,
-
         // 开启静态文件请求处理功能
         'enable_static_handler' => true,
 
-        // 静态文件路径
+        // 项目根目录
+        'document_root' => ROOT_PATH,
+
+        // 静态文件路径，配合document_root使用
         'static_handler_locations' => ['/' . STATIC_NAME],
 
         // 上传文件的临时目录
