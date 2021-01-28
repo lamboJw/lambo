@@ -8,23 +8,28 @@ $config = [
         // 服务器监听端口
         'port' => '10086',
 
-        // 是否启用ssl
+        // 是否启用ssl，协程风格使用
         'ssl' => false,
 
-        // 以下配置仅当app.server_type=SWOOLE_HTTP_SERVER时有效
-        // socket类型，如果开启HTTP2，需增加SWOOLE_SSL
+        // socket类型，如果开启SSL，需增加 SWOOLE_SSL
+        // 仅当app.server_type=SWOOLE_HTTP_SERVER时有效
         'socket_type' => SWOOLE_SOCK_TCP,
 
         // 服务器模式，SWOOLE_PROCESS 或 SWOOLE_BASE
+        // 仅当app.server_type=SWOOLE_HTTP_SERVER时有效
         'server_mode' => SWOOLE_BASE,
-    ],
-    // websocket基本配置
-    'websocket' => [
+
         // 是否开启websocket服务
-        'open_websocket' => false,
+        'open_websocket' => true,
 
         // 客户端与服务器关闭连接的指令
         'close_command' => 'close'
+    ],
+    // websocket基本配置
+    'websocket' => [
+
+
+
     ],
     // 服务器详细配置
     'server' => [
@@ -84,6 +89,15 @@ $config = [
 
         // 开启一键协程化范围
         'hook_flags' => SWOOLE_HOOK_ALL,
+
+        // ssl加密证书
+        'ssl_cert_file' => '',
+
+        // ssl加密密钥
+        'ssl_key_file' => '',
+
+        // ssl加密协议，0为全部支持
+        'ssl_protocols' => 0,
     ],
     // 协程配置
     'coroutine' => [

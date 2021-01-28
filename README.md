@@ -8,6 +8,7 @@
 2. Redis
 3. mbstring
 4. Swoole >= 4.5
+5. posix
 ## 安装
 ```
 git clone https://github.com/lamboJw/lambo.git
@@ -36,7 +37,7 @@ composer install
 1. http：服务器基本配置，ip、端口等。
 2. websocket：websocket服务器配置（待开发）。
 3. server：swoole服务器详细配置，部分配置只有在异步风格才有效。
-4. coroutine：协程配置  。
+4. coroutine：协程配置。  
 _\* 注意：swoole的配置如果不在配置文件里，可自行增加，具体请查看[swoole文档](https://wiki.swoole.com/#/server/setting)_ 。
 
 #### autoload.php 自动加载library和helper
@@ -119,7 +120,7 @@ $data： 传到视图的数据。
 ### Application类
 主要用于传出协程隔离的全局变量、单例类实例、Request实例、Response实例、WebsocketResponse实例。  
 #### 主要方法
-+ `singleton_class(string $class, ...$params)`  
++ `singleton(string $class, ...$params)`  
 返回单例类实例，如果未定义，会使用$params传值进行实例化。
 
 + `set($key, $value = '')`  

@@ -8,7 +8,7 @@ use system\helpers\CoroutineSingleton;
 
 class Application
 {
-    public static string $class_key = 'app';
+    protected static string $class_key = 'app';
 
     use CoroutineSingleton;
 
@@ -17,7 +17,7 @@ class Application
      */
     private $context;
 
-    private function __construct($request, $response)
+    private function __construct()
     {
         if (config('app.server_type') == CO_HTTP_SERVER) {
             $this->context = Coroutine::getContext();
@@ -25,14 +25,9 @@ class Application
             $this->context = [];
         }
         $this->context['ob_count'] = 0;     //缓冲区计数
-        $this->set_request($request);
-        $this->set_response($response);
-        if(config('swoole.websocket.open_websocket', false)){
-            $this->set_websocket_response($response);
-        }
     }
 
-    private function set_request($request)
+    public function set_request($request)
     {
         $this->context['request'] = new Request($request);
     }
@@ -42,7 +37,7 @@ class Application
         return $this->context['request'];
     }
 
-    private function set_response($response)
+    public function set_response($response)
     {
         $this->context['response'] = new Response($response);
     }
@@ -52,7 +47,7 @@ class Application
         return $this->context['response'];
     }
 
-    private function set_websocket_response($response)
+    public function set_websocket_response($response)
     {
         $this->context['websocket_response'] = new WebsocketResponse($response);
     }
@@ -68,7 +63,7 @@ class Application
      * @param mixed ...$params
      * @return mixed
      */
-    public function singleton_class(string $class, ...$params)
+    public function singleton(string $class, ...$params)
     {
         if (!isset($this->context['singleton_classes'][$class])) {
             $this->context['singleton_classes'][$class] = new $class(...$params);

@@ -20,11 +20,6 @@ class WebsocketResponse
         return self::$pool;
     }
 
-    public function upgrade()
-    {
-        return $this->response->upgrade();
-    }
-
     public function recv()
     {
         $frame = $this->response->recv();

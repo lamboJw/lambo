@@ -6,6 +6,7 @@ class test
 {
     public function index()
     {
-        view('test', ['a' => 'Hello World']);
+        $a = request('a');
+        view('test', ['a' => $a]);
     }
 }
