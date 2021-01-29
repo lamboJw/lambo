@@ -23,7 +23,13 @@ $config = [
         'open_websocket' => true,
 
         // 客户端与服务器关闭连接的指令
-        'close_command' => 'close'
+        'close_command' => 'close',
+
+        // websocket处理服务
+        'websocket_service' => \app\websocket\WebsocketService::class,
+
+        // 协程websocket客户端连接池容量
+        'co_ws_pool_size' => 1024,
     ],
     // websocket基本配置
     'websocket' => [

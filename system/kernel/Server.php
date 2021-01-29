@@ -7,6 +7,7 @@ namespace system\kernel;
 
 use Swoole\Process\Pool;
 use Swoole\Process;
+use Swoole\Table;
 use system\kernel\HttpServer\CoHttpServer;
 use system\kernel\HttpServer\SwooleHttpServer;
 
@@ -42,9 +43,15 @@ class Server
             Process::daemon();
         }
         $workerNum = config('swoole.server.worker_num', 1);
+        $connections = null;
+        if(config('swoole.http.open_websocket')){
+            $connections = new Table(config('swoole.http.co_ws_pool_size', 1024));
+            $connections->column('is_upgraded', Table::TYPE_INT);
+            $connections->create();
+        }
         $pool = new Pool($workerNum, 0, null, true);
-        $pool->on('WorkerStart', function ($pool, $workerId) {
-            $server = new CoHttpServer($pool);
+        $pool->on('WorkerStart', function ($pool, $workerId) use ($connections) {
+            $server = new CoHttpServer($pool, $connections);
             Process::signal(SIGTERM, function () use ($server) {
                 $server->shutdown();
             });

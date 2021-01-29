@@ -120,8 +120,11 @@ $data： 传到视图的数据。
 ### Application类
 主要用于传出协程隔离的全局变量、单例类实例、Request实例、Response实例、WebsocketResponse实例。  
 #### 主要方法
-+ `singleton(string $class, ...$params)`  
-返回单例类实例，如果未定义，会使用$params传值进行实例化。
++ `singleton(string $key, string $class = '', ...$params)`  
+返回单例类实例，如果未定义，会使用$params传值进行实例化。  
+$key：类的别名。  
+$class：类。  
+$params：构造函数参数。 
 
 + `set($key, $value = '')`  
 设置全局变量，可以只设置一个值，也可以一次设置多个。  

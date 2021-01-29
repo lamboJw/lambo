@@ -4,6 +4,11 @@ namespace system\kernel;
 
 use Swoole\Coroutine;
 use system\helpers\CoroutineSingleton;
+use system\kernel\HttpServer\Request;
+use system\kernel\HttpServer\Response;
+use system\kernel\WebsocketServer\CoWebsocketResponse;
+use system\kernel\WebsocketServer\SwooleWebsocketResponse;
+use system\kernel\WebsocketServer\WebsocketResponseBase;
 
 
 class Application
@@ -13,62 +18,75 @@ class Application
     use CoroutineSingleton;
 
     /**
-     * 用于存储会话上下文
+     * @var array 用于存储会话上下文
      */
-    private $context;
+    private array $context = [];
+
+    /**
+     * @var int 缓冲区计数
+     */
+    private int $ob_count = 0;
 
     private function __construct()
     {
-        if (config('app.server_type') == CO_HTTP_SERVER) {
-            $this->context = Coroutine::getContext();
-        } else {
-            $this->context = [];
-        }
-        $this->context['ob_count'] = 0;     //缓冲区计数
+
     }
 
     public function set_request($request)
     {
-        $this->context['request'] = new Request($request);
+        if (isset($this->context['singleton_classes']['request'])) {
+            return false;
+        }
+        $this->singleton('request', Request::class, $request);
     }
 
     public function request(): Request
     {
-        return $this->context['request'];
+        return $this->singleton('request');
     }
 
     public function set_response($response)
     {
-        $this->context['response'] = new Response($response);
+        if (isset($this->context['singleton_classes']['response'])) {
+            return false;
+        }
+        $this->singleton('response', Response::class, $response);
     }
 
     public function response(): Response
     {
-        return $this->context['response'];
+        return $this->singleton('response');
     }
 
-    public function set_websocket_response($response)
+    public function set_websocket_response(string $class, ...$params)
     {
-        $this->context['websocket_response'] = new WebsocketResponse($response);
+        if (isset($this->context['singleton_classes']['websocket_response'])) {
+            return false;
+        }
+        if (!in_array($class, [CoWebsocketResponse::class, SwooleWebsocketResponse::class])) {
+            return false;
+        }
+        $this->singleton('websocket_response', $class, ...$params);
     }
 
-    public function ws_response(): WebsocketResponse
+    public function ws_response(): WebsocketResponseBase
     {
-        return $this->context['websocket_response'];
+        return $this->singleton('websocket_response');
     }
 
     /**
      * 获取一个单例的类
-     * @param string $class
-     * @param mixed ...$params
+     * @param string $key 类别名
+     * @param string $class 类
+     * @param mixed ...$params 构造函数参数
      * @return mixed
      */
-    public function singleton(string $class, ...$params)
+    public function singleton(string $key, string $class = '', ...$params)
     {
-        if (!isset($this->context['singleton_classes'][$class])) {
-            $this->context['singleton_classes'][$class] = new $class(...$params);
+        if (!isset($this->context['singleton_class'][$key])) {
+            $this->context['singleton_class'][$key] = new $class(...$params);
         }
-        return $this->context['singleton_classes'][$class];
+        return $this->context['singleton_class'][$key];
     }
 
     /**
@@ -107,24 +125,24 @@ class Application
      */
     public function ob_start()
     {
-        $this->context['ob_count']++;
+        $this->ob_count++;
         ob_start();
     }
 
     public function ob_get_clean()
     {
-        if ($this->context['ob_count'] > 0) {
-            $this->context['ob_count']--;
+        if ($this->ob_count > 0) {
+            $this->ob_count--;
         }
         return ob_get_clean();
     }
 
     public function ob_clean_all()
     {
-        if ($this->context['ob_count'] > 0) {
-            log_message('NOTICE', "有未闭合缓冲区{$this->context['ob_count']}个");
-            for ($i = $this->context['ob_count']; $i > 0; $i--) {
-                $this->context['ob_count']--;
+        if ($this->ob_count > 0) {
+            log_message('NOTICE', "有未闭合缓冲区{$this->ob_count}个");
+            for ($i = $this->ob_count; $i > 0; $i--) {
+                $this->ob_count--;
                 config('app.debug') ? ob_end_flush() : ob_end_clean();
             }
         }
@@ -133,9 +151,9 @@ class Application
     public function ob_get_all()
     {
         $all = [];
-        if ($this->context['ob_count'] > 0) {
-            for ($i = $this->context['ob_count']; $i > 0; $i--) {
-                $all[$this->context['ob_count']] = $this->ob_get_clean();
+        if ($this->ob_count > 0) {
+            for ($i = $this->ob_count; $i > 0; $i--) {
+                $all[$this->ob_count] = $this->ob_get_clean();
             }
         }
         return $all;
@@ -143,7 +161,7 @@ class Application
 
     public function ob_restore_all($all)
     {
-        if ($this->context['ob_count'] == 0) {
+        if ($this->ob_count == 0) {
             foreach ($all as $item) {
                 $this->ob_start();
                 echo $item;

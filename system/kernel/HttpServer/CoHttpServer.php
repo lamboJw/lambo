@@ -3,10 +3,12 @@
 
 namespace system\kernel\HttpServer;
 
-use app\websocket\WebsocketService;
 use Co\Http\Server;
 use Co;
 use Swoole\Process;
+use Swoole\Table;
+use system\kernel\Application;
+use system\kernel\WebsocketServer\CoWebsocketResponse;
 
 class CoHttpServer extends HttpServerBase
 {
@@ -14,14 +16,13 @@ class CoHttpServer extends HttpServerBase
     protected int $max_request = 0;
     protected int $pid;
     protected Process\Pool $pool;
+    protected Table $connections;
 
-    public function __construct($pool = null)
+    public function __construct($pool, $connections)
     {
         parent::__construct();
         $this->pid = posix_getpid();
-        if ($pool !== null) {
-            $this->pool = $pool;
-        }
+        $this->pool = $pool;
         // 没有在协程容器中
         if (Co::getPcid() == false) {
             throw new \RuntimeException('协程风格HTTP服务器不能运行在非协程容器内');
@@ -30,7 +31,12 @@ class CoHttpServer extends HttpServerBase
         $this->max_request = $this->server_config['max_request'];
         $this->onRequest();
         if (config('swoole.http.open_websocket', false)) {
-            $this->ws_service = new WebsocketService();
+            $ws_service = config('swoole.http.websocket_service');
+            if(empty($ws_service)){
+                throw new \RuntimeException('请配置swoole.http.websocket_service项');
+            }
+            $this->ws_service = new $ws_service();
+            $this->connections = $connections;
             $this->websocket();
         }
     }
@@ -95,31 +101,34 @@ class CoHttpServer extends HttpServerBase
     private function websocket()
     {
         $this->server->handle('/websocket', function (\Swoole\Http\Request $request, \Swoole\Http\Response $ws) {    //websocket服务器
-            var_dump($request);
-            $ws->upgrade();
+            app()->set_websocket_response(CoWebsocketResponse::class , $request, $ws, $this->connections, $this->server);
+            $ws_resp = ws_response();
+            $ws_resp->upgrade();
             $this->ws_service->onOpen();
             while (true) {
                 $frame = $ws->recv();
-                if ($frame === '') {
+                $ws_resp->set_frame($frame);
+                if ($ws_resp->frame === '') {
                     debug('INFO', '连接关闭');
                     $this->ws_service->onClose();
-                    $ws->close();
+                    $ws_resp->disconnect(WEBSOCKET_CLOSE_NORMAL, '连接关闭');
                     break;
-                } else if ($frame === false) {
+                } else if ($ws_resp->frame === false) {
                     debug('INFO', 'websocket错误 : ' . swoole_last_error());
-                    $ws->close();
-                    break;
-                } elseif ($frame->data == config('swoole.websocket.close_command', 'close') || get_class($frame) === \Swoole\WebSocket\CloseFrame::class) {
-                    debug('INFO', "客户端fd#{$frame->fd} 发出关闭指令");
                     $this->ws_service->onClose();
-                    $ws->close();
+                    $ws_resp->disconnect(WEBSOCKET_CLOSE_DATA_ERROR, '接收消息失败，错误代码：'.swoole_last_error());
+                    break;
+                } elseif ($ws_resp->frame->data == config('swoole.websocket.close_command', 'close') || get_class($ws_resp->frame) === \Swoole\WebSocket\CloseFrame::class) {
+                    debug('INFO', "客户端fd#".$ws_resp->frame->fd." 发出关闭指令");
+                    $this->ws_service->onClose();
+                    $ws_resp->disconnect(WEBSOCKET_CLOSE_NORMAL, '连接关闭');
                     break;
                 } else {
-                    $ws->push('已收到'.$frame->data, WEBSOCKET_OPCODE_TEXT);
                     $this->ws_service->onMessage();
-                    $ws->push('close', WEBSOCKET_OPCODE_CLOSE);
+//                    $ws_resp->disconnect(WEBSOCKET_CLOSE_NORMAL, '正常退出');
                 }
             }
+            Application::destroy();
         });
     }
 }
