@@ -45,7 +45,9 @@ class SwooleWebsocketResponse extends WebsocketResponseBase
     function broadcast($data, int $opcode = WEBSOCKET_OPCODE_TEXT, int $flag = SWOOLE_WEBSOCKET_FLAG_FIN)
     {
         foreach ($this->server->connections as $fd) {
-            $this->push($fd, $data, $opcode, $flag);
+            if($this->isEstablished($fd)){
+                $this->push($fd, $data, $opcode, $flag);
+            }
         }
     }
 
