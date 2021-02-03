@@ -57,7 +57,7 @@ class Server
             });
             $server->start();
         });
-        echo "协程http服务器启动\n";
+        debug('info',"协程http服务器启动\n");
         $pool->start();
     }
 
@@ -67,7 +67,7 @@ class Server
     private function swoole_http_server()
     {
         $server = new SwooleHttpServer();
-        echo "异步http服务器启动\n";
+        debug('info',"异步http服务器启动\n");
         $server->start();
     }
 }

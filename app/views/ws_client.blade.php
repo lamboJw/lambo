@@ -19,20 +19,24 @@
     }
     //实例话 onmessage
     websocket.onmessage = function (evt) {
+        console.log('on message');
+        console.log(evt);
     }
     //onclose
     websocket.onclose = function (evt) {
         console.log("close");
+        console.log(evt);
         clearInterval(timer);
         // websocket.close();
     }
     websocket.onerror = function (evt) {
         console.log("error")
+        console.log(evt);
     }
 
     timer = setInterval(function () {
         websocket.send('ping');
-    }, 5000);
+    }, 10000);
 
     $("#i").on('change', function () {
         websocket.send($(this).val());

@@ -9,7 +9,7 @@ class SwooleWebsocketResponse extends WebsocketResponseBase
 {
     public $frame;
 
-    public int $fd;
+    public $fd;
 
     protected Server $server;
 
@@ -17,22 +17,22 @@ class SwooleWebsocketResponse extends WebsocketResponseBase
     {
         $this->server = $server;
     }
-    function push(int $fd, $data, int $opcode = WEBSOCKET_OPCODE_TEXT, int $flag = SWOOLE_WEBSOCKET_FLAG_FIN): bool
+    function push($fd, $data, int $opcode = WEBSOCKET_OPCODE_TEXT, int $flag = SWOOLE_WEBSOCKET_FLAG_FIN): bool
     {
         return $this->server->push($fd, $data, $opcode, $flag);
     }
 
-    function exists(int $fd): bool
+    function exists($fd): bool
     {
         return $this->server->exists($fd);
     }
 
-    function disconnect(int $fd, int $code = SWOOLE_WEBSOCKET_CLOSE_NORMAL, string $reason = ''): bool
+    function disconnect($fd, int $code = SWOOLE_WEBSOCKET_CLOSE_NORMAL, string $reason = ''): bool
     {
         return $this->server->disconnect($fd, $code, $reason);
     }
 
-    function isEstablished(int $fd): bool
+    function isEstablished($fd): bool
     {
         return $this->server->isEstablished($fd);
     }
@@ -42,10 +42,10 @@ class SwooleWebsocketResponse extends WebsocketResponseBase
         $this->frame = $frame;
     }
 
-    function broadcast(callable $func)
+    function broadcast($data, int $opcode = WEBSOCKET_OPCODE_TEXT, int $flag = SWOOLE_WEBSOCKET_FLAG_FIN)
     {
         foreach ($this->server->connections as $fd) {
-            $func($fd);
+            $this->push($fd, $data, $opcode, $flag);
         }
     }
 

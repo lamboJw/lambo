@@ -53,6 +53,8 @@ namespace system\kernel;
  * @method int zcount($key, $start, $end)
  * @method float zincrby($key, $value, $member)
  * @method array zrange($key, $start, $end, $withscores = null)
+ * @method bool publish($channel, $message)
+ * @method bool unsubscribe($channel)
  */
 class BaseRedis
 {

@@ -13,7 +13,7 @@ use system\kernel\WebsocketServer\WebsocketResponseBase;
 
 class Application
 {
-    protected static string $class_key = 'app';
+    public static string $class_key = 'app';
 
     use CoroutineSingleton;
 

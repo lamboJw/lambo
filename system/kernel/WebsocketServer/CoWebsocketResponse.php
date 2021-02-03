@@ -4,10 +4,13 @@
 namespace system\kernel\WebsocketServer;
 
 use Swoole\Coroutine\Http\Server;
-use Swoole\Table;
+use Swoole\ExitException;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
+use Swoole\Table;
 use Swoole\WebSocket\CloseFrame;
+use system\kernel\BaseRedis;
+use system\kernel\HttpServer\CoHttpServer;
 
 class CoWebsocketResponse extends WebsocketResponseBase
 {
@@ -16,55 +19,54 @@ class CoWebsocketResponse extends WebsocketResponseBase
     protected Request $request;
     public Table $connections;
     protected Server $server;
-    public int $fd;
+    public $fd;   //客户端唯一标识key
 
-    public function __construct(Request $request, Response $ws, Table $connections, Server $server)
+    public function __construct(Request $request, Response $ws, Table $connections)
     {
         $this->request = $request;
         $this->ws = $ws;
+        $this->fd = CoHttpServer::$pid . '_' . spl_object_id($ws);
+        var_dump($this->fd);
         $this->connections = $connections;
-        $this->server = $server;
-        $this->connections->set($request->fd, ['is_upgraded' => 0]);
-        $this->fd = $request->fd;
+        $this->connections->set($this->fd, ['is_upgraded' => 0]);
     }
 
     public function set_frame($frame)
     {
         $this->frame = $frame;
-        $this->fd = $frame->fd;
-    }
-
-    function push(int $fd, $data, int $opcode = WEBSOCKET_OPCODE_TEXT, int $flag = SWOOLE_WEBSOCKET_FLAG_FIN): bool
-    {
-        if($fd == $this->fd){
-            return $this->ws->push($data, $opcode, $flag);
-        }else{
-            if(!$this->isEstablished($fd)){
-                return false;
-            }
-            $this->ws->socket->fd = $fd;
-            $re = $this->ws->push($data, $opcode, $flag);
-            $this->ws->socket->fd = $this->ws->fd;
-            return $re;
+        if (empty($frame->fd)) {
+            $this->connections->del($this->fd);
         }
     }
 
-    function exists(int $fd): bool
+    function push($fd, $data, int $opcode = WEBSOCKET_OPCODE_TEXT, int $flag = SWOOLE_WEBSOCKET_FLAG_FIN): bool
+    {
+        return $this->ws->push($data, $opcode, $flag);
+    }
+
+    function exists($fd): bool
     {
         return $this->connections->exist($fd);
     }
 
-    function disconnect(int $fd, int $code = SWOOLE_WEBSOCKET_CLOSE_NORMAL, string $reason = ''): bool
+    function disconnect($fd, int $code = SWOOLE_WEBSOCKET_CLOSE_NORMAL, string $reason = ''): bool
     {
-        $close_frame = new CloseFrame();
-        $close_frame->reason = $reason;
-        $close_frame->code = $code;
-        $re = $this->ws->push($close_frame);
-        $this->connections->del($this->fd);
-        return $re;
+
+        if ($fd != $this->fd) {
+            $redis = new BaseRedis();
+            $func = 'disconnect';
+            $redis->publish('websocket_broadcast', json_encode(compact('func', 'fd', 'code', 'reason')));
+            return true;
+        } else {
+            $close_frame = new CloseFrame();
+            $close_frame->reason = $reason;
+            $close_frame->code = $code;
+            $close_frame->finish = 1;
+            return $this->ws->push($close_frame);
+        }
     }
 
-    function isEstablished(int $fd): bool
+    function isEstablished($fd): bool
     {
         $re = $this->connections->get($fd, 'is_upgraded');
         if ($re === false) {
@@ -80,10 +82,12 @@ class CoWebsocketResponse extends WebsocketResponseBase
         }
     }
 
-    function broadcast(callable $func)
+    function broadcast($data, int $opcode = WEBSOCKET_OPCODE_TEXT, int $flag = SWOOLE_WEBSOCKET_FLAG_FIN)
     {
-        foreach ($this->connections as $fd => $v) {
-            $func($fd);
-        }
+        $redis = new BaseRedis();
+        $data = serialize($data);
+        $func = 'broadcast';
+        $fd = $this->fd;
+        $redis->publish('websocket_broadcast', json_encode(compact('func', 'fd', 'data', 'opcode', 'flag')));
     }
 }

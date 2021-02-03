@@ -15,7 +15,7 @@ class Debug
     public function debug($level, $msg)
     {
         $level = strtoupper($level);
-        if (!config('app.debug') || !in_array($level, array_keys($this->_levels)) || $this->_levels[$level] > config('app.debug_level')) {
+        if (!config('app.debug') || !array_key_exists($level, $this->_levels) || $this->_levels[$level] > config('app.debug_level')) {
             return false;
         }
         $old = app()->ob_get_all();
