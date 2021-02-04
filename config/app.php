@@ -7,7 +7,7 @@ $config = [
     'debug' => true,
 
     // 记录debug信息的最高等级
-    'debug_level' => LEVEL_NONE,
+    'debug_level' => LEVEL_ALL,
 
     // 日志文件的保存路径
     'log_path' => STATIC_PATH.'/logs',
