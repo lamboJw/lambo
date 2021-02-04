@@ -122,18 +122,18 @@ class CoHttpServer extends HttpServerBase
                 $frame = $ws->recv();
                 $ws_resp->set_frame($frame);
                 if ($ws_resp->frame === '') {
-                    debug('INFO', $ws_resp->fd . ' 确认客户端关闭，连接关闭');
+                    debug('debug', $ws_resp->fd . ' 确认客户端关闭，连接关闭');
                     $this->connections->del($ws_resp->fd);
                     $ws->close();
                     break;
                 } else if ($ws_resp->frame === false) {
                     $error_no = swoole_last_error();
-                    debug('INFO', $ws_resp->fd . ' websocket错误 : ' . $error_no);
+                    debug('debug', $ws_resp->fd . ' websocket错误 : ' . $error_no);
                     $this->connections->del($ws_resp->fd);
                     $ws->close();
                     break;
                 } elseif ($ws_resp->frame->data == config('swoole.websocket.close_command', 'close')) {
-                    debug('INFO', "客户端fd#" . $ws_resp->fd . " 发出关闭指令");
+                    debug('debug', "客户端fd#" . $ws_resp->fd . " 发出关闭指令");
                     $ws_resp->disconnect($ws_resp->fd, WEBSOCKET_CLOSE_NORMAL, '关闭连接');
                 } elseif (get_class($ws_resp->frame) === \Swoole\WebSocket\CloseFrame::class && !config('swoole.websocket.open_websocket_close_frame')) {
                     try{
