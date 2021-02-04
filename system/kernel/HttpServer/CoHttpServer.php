@@ -110,7 +110,14 @@ class CoHttpServer extends HttpServerBase
             $ws_resp = ws_response();
             $this->subscribe();
             $ws_resp->upgrade();
-            $this->ws_service->onOpen();
+            try{
+                $this->ws_service->onOpen();
+            }catch (Throwable $e){
+                if (!$e instanceof ExitException) {
+                    debug('error', 'onOpen产生错误：' . $e->getMessage());
+                    throw $e;
+                }
+            }
             while (true) {
                 $frame = $ws->recv();
                 $ws_resp->set_frame($frame);
@@ -129,7 +136,14 @@ class CoHttpServer extends HttpServerBase
                     debug('INFO', "客户端fd#" . $ws_resp->fd . " 发出关闭指令");
                     $ws_resp->disconnect($ws_resp->fd, WEBSOCKET_CLOSE_NORMAL, '关闭连接');
                 } elseif (get_class($ws_resp->frame) === \Swoole\WebSocket\CloseFrame::class && !config('swoole.websocket.open_websocket_close_frame')) {
-                    $this->ws_service->onClose();
+                    try{
+                        $this->ws_service->onClose();
+                    }catch (Throwable $e){
+                        if (!$e instanceof ExitException) {
+                            debug('error', 'onClose产生错误：' . $e->getMessage());
+                            throw $e;
+                        }
+                    }
                     $this->connections->del($ws_resp->fd);
                     $ws->close();
                     break;
@@ -142,7 +156,14 @@ class CoHttpServer extends HttpServerBase
                     $pong->opcode = WEBSOCKET_OPCODE_PING;
                     $ws_resp->push($ws_resp->fd, $pong);
                 } else {
-                    $this->ws_service->onMessage();
+                    try{
+                        $this->ws_service->onMessage();
+                    }catch (Throwable $e){
+                        if (!$e instanceof ExitException) {
+                            debug('error', 'onMessage产生错误：' . $e->getMessage());
+                            throw $e;
+                        }
+                    }
                     if (get_class($ws_resp->frame) === \Swoole\WebSocket\CloseFrame::class) {
                         $this->connections->del($ws_resp->fd);
                         $ws->close();
@@ -211,8 +232,7 @@ class CoHttpServer extends HttpServerBase
             } catch (throwable $e) {
                 if (!$e instanceof ExitException) {
                     debug('error', 'websocket订阅子协程错误：' . $e->getMessage());
-                } else {
-                    var_dump('websocket订阅子协程退出');
+                    throw $e;
                 }
             }
         });
