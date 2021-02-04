@@ -20,6 +20,11 @@ abstract class HttpServerBase
         'ssl' => false,
         'socket_type' => SWOOLE_SOCK_TCP,
         'server_mode' => SWOOLE_BASE,
+        'open_websocket' => true,
+        'close_command' => 'close',
+        'websocket_service' => \app\websocket\WebsocketService::class,
+        'co_ws_broadcast' => true,
+        'co_ws_pool_size' => 1024,
     ];
 
     protected array $server_config = [
@@ -46,10 +51,19 @@ abstract class HttpServerBase
         'ssl_protocols' => 0,
     ];
 
+    protected array $websocket_config = [
+        'websocket_subprotocol' => '',
+        'open_websocket_close_frame' => false,
+        'open_websocket_ping_frame' => false,
+        'open_websocket_pong_frame' => false,
+        'websocket_compression' => false,
+    ];
+
     public function __construct()
     {
         $this->http_config = array_replace_recursive($this->http_config, config('swoole.http', []));
         $this->server_config = array_replace_recursive($this->server_config, config('swoole.server', []));
+        $this->websocket_config = array_replace_recursive($this->websocket_config, config('swoole.websocket', []));
         $this->route_map = Router::load_routes();
     }
 

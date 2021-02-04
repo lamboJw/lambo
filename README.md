@@ -20,7 +20,7 @@ composer install
 + 本地浏览器访问 `http://127.0.0.1:10086/test` 。 
 + 可以看到Hello World字样，说明启动成功。
 ## 使用说明
-**\* 注意：本框架所有类的自动加载都是基于命名空间，且命名空间需要与文件路径保持一致！**
+> 注意：本框架所有类的自动加载都是基于命名空间，且命名空间需要与文件路径保持一致！
 ### 定义常量
 在根目录的`run_server.php`中增加即可。非必要，不要改动原来的常量。
 
@@ -34,11 +34,11 @@ composer install
 6. 是否自动加载vendor。  
 
 #### swoole.php 关于swoole的设置
-1. http：服务器基本配置，ip、端口等。
-2. websocket：websocket服务器配置（待开发）。
+1. http：http服务器基本配置，ip、端口等，及websocket服务器基本配置。
+2. websocket：swoole websocket服务器配置，部分配置只有在异步风格才有效。
 3. server：swoole服务器详细配置，部分配置只有在异步风格才有效。
 4. coroutine：协程配置。  
-_\* 注意：swoole的配置如果不在配置文件里，可自行增加，具体请查看[swoole文档](https://wiki.swoole.com/#/server/setting)_ 。
+> 注意：swoole的配置如果不在配置文件里，可自行增加，具体请查看[swoole文档](https://wiki.swoole.com/#/server/setting)
 
 #### autoload.php 自动加载library和helper
 在对应位置加上类名，在服务器启动前会自动加载并常驻内存，因此只可以加载构造函数不需要传值的类。  
@@ -88,10 +88,8 @@ Http响应。
 若不传参数，则返回Response实例。  
 若传参数，则把data作为内容发送到浏览器。
 
-+ `ws_response($data = '', $opcode = WEBSOCKET_OPCODE_TEXT, $flags = true)`  
-websocket响应。  
-若不传参数，则返回WebsocketResponse实例。  
-若传参数，则把内容推送到客户端。
++ `ws_response()`  
+返回WebsocketResponse实例。  
 
 + `server($key = '')`  
 获取请求中的server信息，类似原生PHP的$_SERVER。
@@ -177,7 +175,7 @@ $key为空时，返回所有header的值。
 + `end($content = '')`  
 将内容发送到浏览器并结束本次响应。慎用，一般响应只需要使用`write()`方法。  
 如果开启了标准输出到页面，使用该方法后，标准输出的内容会抛弃。  
-_\* 注意：使用该方法后，会直接结束程序。_
+> 注意：使用该方法后，会直接结束程序。
 
 + `status($statusCode)`  
 设置响应状态码。
@@ -192,7 +190,7 @@ $length：长度，不传默认到文件末尾。
 重定向页面。
 $location：重定向地址。  
 $http_code：重定向状态码。  
-_\* 注意：使用该方法后，会直接结束程序。_
+> 注意：使用该方法后，会直接结束程序。
 
 + `write($content)`  
 将内容发送到浏览器。  
@@ -209,28 +207,6 @@ _\* 注意：使用该方法后，会直接结束程序。_
 + `header($key, $value, $format = null)`  
 设置 HTTP 响应的 Header 信息。  
 $format：是否需要对 Key 进行 HTTP 约定格式化【默认 true 会自动格式化】  
-
-### WebsocketResponse类
-对`Swoole\Http\Response`进行封装的websocket响应类，自动保存客户端池。  
-_\* 注意：仅适用于协程风格。_  
-#### 主要方法
-+ `get_pool()`  
-获取客户端池
-
-+ `upgrade()`  
-发送 WebSocket 握手成功信息。
-
-+ `recv()`  
-接收 WebSocket 消息。已进行基本异常退出判断。
-
-+ `push($data, $opcode = WEBSOCKET_OPCODE_TEXT, $flags = true)`
-发送 WebSocket 数据帧。  
-$data：发送数据帧（类型为Frame时，忽略后面两个参数）。  
-$opcode：数据帧类型，WEBSOCKET_OPCODE_TEXT（文本内容） 或 WEBSOCKET_OPCODE_BINARY（二进制内容）。  
-$finish：是否发送完成。
-
-+ `close()`  
-关闭 WebSocket 连接。
 
 ### 数据库Model
 移植[Simps](https://simps.io)框架的BaseModel模块，基于PDO连接MySQL，可以使用连接池，增加短连接模式，增加了一些功能。使用Medoo框架，基本的使用方法，请查看[Medoo文档](https://medoo.lvtao.net/1.2/doc.php) 。  
@@ -329,7 +305,7 @@ $router->route('/test','test','index');
 + 使用中间件  
 `middleware()`：  
 $middleware： 该路由需要使用的中间件名称。中间件名称为`app/middleware.php`中的key。  
-_\* 注意：单独使用middleware()方法没有任何效果，不许和route()方法一起使用。_
+> 注意：单独使用middleware()方法没有任何效果，不许和route()方法一起使用。
 ```
 $router = new Router();
 $router->middleware(['test'])->route('/test','test','index');
@@ -374,4 +350,53 @@ $data：传递到视图的变量
 + daemonize
 
 #### 异步风格
-使用异步风格服务器，`swoole.server`所有配置项都能使用，默认使用SWOOLE_BASE模式。
+使用异步风格服务器，`swoole.server`所有配置项都能使用，默认使用SWOOLE_BASE模式。  
+
+### Websocket服务器
+跟随HTTP服务器一同启动，与HTTP服务器使用同一端口，使用`ws://host:port/websocket`连接。  
+可以使用的事件有onOpen、onMessage、onClose三个，默认在`app/websocket/WebsocketService.php`中实现对应逻辑。  
+使用全局方法`ws_response()`获取websocket响应类。  
+  
+#### 配置
++ `swoole.http.open_websocket`：控制开始或关闭。  
++ `swoole.http.websocket_service`：websocket服务器处理事件的类，默认即可。如需修改，新的类需要实现`\system\kernel\WebsocketServer\WebsocketHandlerInterface`接口。  
++ `swoole.http.co_ws_broadcast`：协程风格服务器是否开启广播功能。  
+> 注意：协程风格下的广播依赖redis的发布订阅功能，需要先配置好redis。
++ `swoole.http.co_ws_pool_size`：协程风格服务器最大同时连接客户端数。  
+> 注意：协程风格下的客户端连接记录使用`Swoole\Table`实现，当连接数大于该参数时，会查询不到多余的连接，且无法广播到这些连接。
++ `swoole.http.close_command`：客户端发送关闭命令的关键字。当frame->data等于该参数时，服务端会关闭连接。  
++ `swoole.websocket.websocket_subprotocol`：设置WebSocket子协议。设置后握手响应的 HTTP 头会增加 Sec-WebSocket-Protocol: {$websocket_subprotocol}。**协程风格暂不支持该配置。**  
++ `swoole.websocket.open_websocket_close_frame`：在onMessage事件中接收关闭帧。无需手动断开连接，处理完onMessage事件后会自动断开。
++ `swoole.websocket.open_websocket_ping_frame`：在onMessage事件中接收Ping帧。
++ `swoole.websocket.open_websocket_pong_frame`：在onMessage事件中接收Pong帧。
++ `swoole.websocket.websocket_compression`：启用数据压缩，配合push方法或broadcast方法中的flag参数使用。**协程风格暂不支持该配置。**  
+#### websocket响应类
++ `public $fd`：websocket连接的fd。
++ `public $frame`：客户端发送到服务器的帧，类型为`Swoole\WebSocket\Frame`。
++ `push($fd, $data, int $opcode = WEBSOCKET_OPCODE_TEXT, int $flag = SWOOLE_WEBSOCKET_FLAG_FIN): bool`  
+  推送数据到指定客户端。  
+  $fd：websocket连接的fd。  
+  $data：发送的数据。当类型为`Swoole\WebSocket\Frame`时，忽略后面的两个参数。  
+  $opcode：指定发送数据内容的格式，默认为文本类型，发送二进制数据，使用`WEBSOCKET_OPCODE_BINARY`。  
+  $flag：是否已完成，是否压缩帧。0：未完成；`SWOOLE_WEBSOCKET_FLAG_FIN`：已完成；`SWOOLE_WEBSOCKET_FLAG_COMPRESS`：压缩帧。需要压缩时，使用`SWOOLE_WEBSOCKET_FLAG_FIN | SWOOLE_WEBSOCKET_FLAG_COMPRESS`。
+  
++ `exists($fd): bool`
+  判断连接是否存在。
+  $fd：websocket连接的fd。  
+
++ `disconnect($fd, int $code = SWOOLE_WEBSOCKET_CLOSE_NORMAL, string $reason = ''): bool`
+  断开指定客户端的连接。  
+  $fd：websocket连接的fd。  
+  $code：关闭连接的状态码。  
+  $reason：关闭连接的原因。  
+
++ `isEstablished($fd): bool`
+  检查连接是否为有效的WebSocket客户端连接。  
+  $fd：websocket连接的fd。  
+  
++ `broadcast($data, int $opcode = WEBSOCKET_OPCODE_TEXT, int $flag = SWOOLE_WEBSOCKET_FLAG_FIN)`  
+  广播信息到所有除自己外的在线客户端。  
+  参数除$fd外，与`push()`方法对应。  
+  
++ `connection_count(): int;`
+  返回当前连接的客户端数量。  

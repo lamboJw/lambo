@@ -15,7 +15,12 @@ class SwooleHttpServer extends HttpServerBase
         parent::__construct();
         if (config('swoole.http.open_websocket', false)) {
             $this->server = new ws_server($this->http_config['host'], $this->http_config['port'], $this->http_config['server_mode'], $this->http_config['socket_type']);
-            $this->ws_service = new WebsocketService();
+            $ws_service = config('swoole.http.websocket_service');
+            if (empty($ws_service)) {
+                throw new \RuntimeException('请配置swoole.http.websocket_service项');
+            }
+            $this->ws_service = new $ws_service();
+            $this->server->set($this->websocket_config);
             $this->websocket();
         } else {
             $this->server = new http_server($this->http_config['host'], $this->http_config['port'], $this->http_config['server_mode'], $this->http_config['socket_type']);
@@ -42,6 +47,10 @@ class SwooleHttpServer extends HttpServerBase
             app()->set_websocket_response(SwooleWebsocketResponse::class, $server);
             ws_response()->set_frame($frame);
             ws_response()->set_fd($frame->fd);
+            if ($frame->data == config('swoole.websocket.close_command', 'close')) {
+                $server->disconnect($frame->fd, WEBSOCKET_CLOSE_NORMAL, '关闭连接');
+                return;
+            }
             $this->ws_service->onMessage();
         });
         $this->server->on('close', function (ws_server $server, $fd) {

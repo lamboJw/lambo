@@ -21,4 +21,6 @@ abstract class WebsocketResponseBase
     abstract function set_frame($frame);
 
     abstract function broadcast($data, int $opcode = WEBSOCKET_OPCODE_TEXT, int $flag = SWOOLE_WEBSOCKET_FLAG_FIN);
+
+    abstract function connection_count(): int;
 }

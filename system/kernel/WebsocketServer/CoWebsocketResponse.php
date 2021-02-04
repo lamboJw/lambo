@@ -4,7 +4,6 @@
 namespace system\kernel\WebsocketServer;
 
 use Swoole\Coroutine\Http\Server;
-use Swoole\ExitException;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 use Swoole\Table;
@@ -15,20 +14,21 @@ use system\kernel\HttpServer\CoHttpServer;
 class CoWebsocketResponse extends WebsocketResponseBase
 {
     public $frame;
-    protected Response $ws;
-    protected Request $request;
-    public Table $connections;
-    protected Server $server;
+    private Response $ws;
+    private Request $request;
+    private Table $connections;
+    private Server $server;
     public $fd;   //客户端唯一标识key
+    private bool $use_broadcast = false;
 
     public function __construct(Request $request, Response $ws, Table $connections)
     {
         $this->request = $request;
         $this->ws = $ws;
         $this->fd = CoHttpServer::$pid . '_' . spl_object_id($ws);
-        var_dump($this->fd);
         $this->connections = $connections;
         $this->connections->set($this->fd, ['is_upgraded' => 0]);
+        $this->use_broadcast = (bool)config('swoole.http.co_ws_broadcast', false);
     }
 
     public function set_frame($frame)
@@ -41,7 +41,18 @@ class CoWebsocketResponse extends WebsocketResponseBase
 
     function push($fd, $data, int $opcode = WEBSOCKET_OPCODE_TEXT, int $flag = SWOOLE_WEBSOCKET_FLAG_FIN): bool
     {
-        return $this->ws->push($data, $opcode, $flag);
+        if ($fd != $this->fd) {
+            if (!$this->use_broadcast) {
+                return false;
+            }
+            $redis = new BaseRedis();
+            $func = 'push';
+            $data = serialize($data);
+            $redis->publish('websocket_broadcast', json_encode(compact('func', 'fd', 'data', 'opcode', 'flag')));
+            return true;
+        } else {
+            return $this->ws->push($data, $opcode, $flag);
+        }
     }
 
     function exists($fd): bool
@@ -51,8 +62,10 @@ class CoWebsocketResponse extends WebsocketResponseBase
 
     function disconnect($fd, int $code = SWOOLE_WEBSOCKET_CLOSE_NORMAL, string $reason = ''): bool
     {
-
         if ($fd != $this->fd) {
+            if (!$this->use_broadcast) {
+                return false;
+            }
             $redis = new BaseRedis();
             $func = 'disconnect';
             $redis->publish('websocket_broadcast', json_encode(compact('func', 'fd', 'code', 'reason')));
@@ -82,12 +95,21 @@ class CoWebsocketResponse extends WebsocketResponseBase
         }
     }
 
-    function broadcast($data, int $opcode = WEBSOCKET_OPCODE_TEXT, int $flag = SWOOLE_WEBSOCKET_FLAG_FIN)
+    function broadcast($data, int $opcode = WEBSOCKET_OPCODE_TEXT, int $flag = SWOOLE_WEBSOCKET_FLAG_FIN): bool
     {
+        if (!$this->use_broadcast) {
+            return false;
+        }
         $redis = new BaseRedis();
         $data = serialize($data);
         $func = 'broadcast';
         $fd = $this->fd;
         $redis->publish('websocket_broadcast', json_encode(compact('func', 'fd', 'data', 'opcode', 'flag')));
+        return true;
+    }
+
+    function connection_count(): int
+    {
+        return $this->connections->count();
     }
 }

@@ -11,12 +11,13 @@ class SwooleWebsocketResponse extends WebsocketResponseBase
 
     public $fd;
 
-    protected Server $server;
+    private Server $server;
 
     public function __construct(Server $server)
     {
         $this->server = $server;
     }
+
     function push($fd, $data, int $opcode = WEBSOCKET_OPCODE_TEXT, int $flag = SWOOLE_WEBSOCKET_FLAG_FIN): bool
     {
         return $this->server->push($fd, $data, $opcode, $flag);
@@ -45,7 +46,7 @@ class SwooleWebsocketResponse extends WebsocketResponseBase
     function broadcast($data, int $opcode = WEBSOCKET_OPCODE_TEXT, int $flag = SWOOLE_WEBSOCKET_FLAG_FIN)
     {
         foreach ($this->server->connections as $fd) {
-            if($this->isEstablished($fd)){
+            if ($fd != $this->fd && $this->isEstablished($fd)) {
                 $this->push($fd, $data, $opcode, $flag);
             }
         }
@@ -54,5 +55,10 @@ class SwooleWebsocketResponse extends WebsocketResponseBase
     function set_fd($fd)
     {
         $this->fd = $fd;
+    }
+
+    function connection_count(): int
+    {
+        return count($this->server->connections);
     }
 }

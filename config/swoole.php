@@ -28,14 +28,28 @@ $config = [
         // websocket处理服务
         'websocket_service' => \app\websocket\WebsocketService::class,
 
+        // 协程websocket服务器开启广播功能
+        'co_ws_broadcast' => true,
+
         // 协程websocket客户端连接池容量
         'co_ws_pool_size' => 1024,
     ],
     // websocket基本配置
     'websocket' => [
+        // 设置WebSocket子协议
+        'websocket_subprotocol' => '',
 
+        // 启用在 onMessage 回调中接收关闭帧（opcode 为 0x08 的帧）
+        'open_websocket_close_frame' => false,
 
+        // 启用在 onMessage 回调中接收Ping帧（opcode 为 0x09 的帧）
+        'open_websocket_ping_frame' => false,
 
+        // 启用在 onMessage 回调中接收Pong帧（opcode 为 0x0A 的帧）
+        'open_websocket_pong_frame' => false,
+
+        // 启用数据压缩
+        'websocket_compression' => false,
     ],
     // 服务器详细配置
     'server' => [

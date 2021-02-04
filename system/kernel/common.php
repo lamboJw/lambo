@@ -204,16 +204,12 @@ if (!function_exists('response')) {
 }
 
 if (!function_exists('ws_response')) {
-    function ws_response($data = '', $opcode = WEBSOCKET_OPCODE_TEXT, $flags = true)
+    function ws_response()
     {
         if (!\system\kernel\Application::isInstantiated()) {
             throw new RuntimeException('Application未实例化');
         }
-        if (empty($data)) {
-            return app()->ws_response();
-        } else {
-            return app()->ws_response()->push($data, $opcode, $flags);
-        }
+        return app()->ws_response();
     }
 }
 
