@@ -39,7 +39,12 @@ class Model extends BaseModel
     public function __construct()
     {
         if (empty($this->db)) {
-            throw new RuntimeException('未指定数据库');
+            $mysql_config = config('database');
+            if(count($mysql_config) == 0){
+                throw new RuntimeException('未配置数据库');
+            }
+            reset($mysql_config);
+            $this->db = (string)key($mysql_config);
         }
         parent::__construct($this->db);
     }
@@ -68,10 +73,11 @@ class Model extends BaseModel
     }
 
     /**
+     * 获取数据列表
      * @param array $where 查询条件
      * @param array|string $columns 查询字段
      * @param null|array $join 连表查询
-     * @param $count @总数量
+     * @param int|bool $count 总数量引用
      * @return array|bool
      */
     public function getList(array $where, $columns = '*', $join = null, &$count = false)
@@ -156,6 +162,7 @@ class Model extends BaseModel
     }
 
     /**
+     * 插入
      * @param array $data 插入数据
      * @return string
      */
@@ -189,6 +196,7 @@ class Model extends BaseModel
     }
 
     /**
+     * 更新
      * @param array $data 更新数据
      * @param array $where 更新条件
      * @return int
@@ -210,6 +218,7 @@ class Model extends BaseModel
     }
 
     /**
+     * 删除
      * @param array $where 删除条件
      * @return int
      */
@@ -286,9 +295,18 @@ class Model extends BaseModel
      */
     public function updateOrInsert($where, $data)
     {
-        $count = $this->count($this->tableName, '*', $where);
-        if ($count > 0) {
-            return $this->edit($data, $where);
+        $info = $this->get($this->tableName, '*', $where);
+        if (!empty($info)) {
+            foreach ($data as $key => $val) {   //检查要更新的字段内容是否一样，一样的就不更新
+                if($val === $info[$key]){
+                    unset($data[$key]);
+                }
+            }
+            if(!empty($data)){  //如果还有不一样的，才执行更新
+                return $this->edit($data, $where);
+            }else{      //完全一样的，就不执行更新
+                return 1;
+            }
         } else {
             return $this->add($data);
         }

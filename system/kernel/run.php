@@ -10,9 +10,9 @@ if (config('app.load_vendor', false)) {
 //创建redis连接池
 if (config('app.enable_redis_pool')) {
     CO\run(function () {
-        $redis_config_key = config('app.redis_config_key');
+        $redis_config_key = config('app.redis_config_key', 'default');
         $redis_config = config("redis.{$redis_config_key}");
-        new \system\kernel\BaseRedis($redis_config);
+        new \system\kernel\Redis($redis_config);
     });
 }
 

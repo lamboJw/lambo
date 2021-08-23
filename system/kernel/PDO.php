@@ -91,7 +91,7 @@ class PDO
             }
             return self::$instance[$db];
         } else {
-            $config = config('database', $db);
+            $config = config("database.{$db}", []);
             return new self($config);
         }
     }

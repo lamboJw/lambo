@@ -20,7 +20,7 @@ $config = [
         'server_mode' => SWOOLE_BASE,
 
         // 是否开启websocket服务
-        'open_websocket' => true,
+        'open_websocket' => false,
 
         // 客户端与服务器关闭连接的指令
         'close_command' => 'close',

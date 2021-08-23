@@ -3,117 +3,190 @@
 declare(strict_types=1);
 
 namespace system\kernel;
-
-use RuntimeException;
-use Swoole\Database\RedisConfig;
-use Swoole\Database\RedisPool;
-
+/**
+ * 部分redis命令，方便ide自动提示
+ * @package system\kernel
+ * @method bool select($index)
+ * @method bool del($key)
+ * @method bool exists($key)
+ * @method bool expire($key, $second)
+ * @method bool expireat($key, $timestamp)
+ * @method array keys($pattern)
+ * @method int ttl($key)
+ * @method string get($key)
+ * @method bool set($key, $value)
+ * @method bool setex($key, $second, $value)
+ * @method bool setnx($key, $value)
+ * @method bool incr($key)
+ * @method bool incrby($key, $increment)
+ * @method bool decr($key)
+ * @method bool decrby($key, $decrement)
+ * @method bool hdel($key, $field1, ...$otherFields)
+ * @method bool hexists($key, $field)
+ * @method string hget($key, $field)
+ * @method array hgetall($key)
+ * @method bool hincrby($key, $field, $increment)
+ * @method array hkeys($key)
+ * @method int hlen($key)
+ * @method array hmget($key, array $hashKeys)
+ * @method bool hmset($key, array $hashKeys)
+ * @method bool hset($key, $field, $value)
+ * @method string lindex($key, $index)
+ * @method int llen($key)
+ * @method string lpop($key)
+ * @method bool lpush($key, ...$value1)
+ * @method array lrange($key, $start, $end)
+ * @method bool lrem($key, $value, $count)
+ * @method string rpop($key)
+ * @method bool rpush($key, ...$value1)
+ * @method bool|int sadd($key, ...$value1)
+ * @method int scard($key)
+ * @method array sdiff($key1, ...$otherKeys)
+ * @method array sinter($key1, ...$otherKeys)
+ * @method array sunion($key1, ...$otherKeys)
+ * @method bool sismember($key, $value)
+ * @method array smembers($key)
+ * @method int srem($key, ...$member1)
+ * @method array|bool sscan($key, &$iterator, $pattern = null, $count = 0)
+ * @method int zadd($key, $options, $score1, $value1 = null, $score2 = null, $value2 = null, $scoreN = null, $valueN = null)
+ * @method int zcard($key)
+ * @method int zcount($key, $start, $end)
+ * @method float zincrby($key, $value, $member)
+ * @method array zrange($key, $start, $end, $withscores = null)
+ * @method int|bool zrevrank($key, $member)
+ * @method int|bool zrank($key, $member)
+ * @method bool publish($channel, $message)
+ * @method bool unsubscribe($channel)
+ */
 class Redis
 {
-    protected RedisPool $pools;
-    protected \Redis $class;
-    protected $config = [
-        'host' => '127.0.0.1',
-        'port' => 6379,
-        'auth' => '',
-        'db_index' => 0,
-        'time_out' => 1,
-        'size' => 64,
-    ];
+    protected BaseRedis $pool;
 
-    private static Redis $instance;
+    protected \Redis $connection;
 
-    private function __construct(array $config)
+    public function __construct($config = null)
     {
-        if (config('app.enable_redis_pool')) {
-            if (empty($this->pools)) {
-                $this->config = array_replace_recursive($this->config, $config);
-                $this->pools = new RedisPool(
-                    (new RedisConfig())
-                        ->withHost($this->config['host'])
-                        ->withPort($this->config['port'])
-                        ->withAuth($this->config['auth'])
-                        ->withDbIndex($this->config['db_index'])
-                        ->withTimeout($this->config['time_out']),
-                    $this->config['size']
-                );
-            }
+        if (! empty($config)) {
+            $this->pool = BaseRedis::getInstance($config);
         } else {
-            $this->config = array_replace_recursive($this->config, $config);
-            $redis_config = (new RedisConfig())
-                ->withHost($this->config['host'])
-                ->withPort($this->config['port'])
-                ->withAuth($this->config['auth'])
-                ->withDbIndex($this->config['db_index'])
-                ->withTimeout($this->config['time_out']);
-            $redis = new \Redis();
-            $arguments = [
-                $redis_config->getHost(),
-                $redis_config->getPort(),
-            ];
-            if ($redis_config->getTimeout() !== 0.0) {
-                $arguments[] = $redis_config->getTimeout();
-            }
-            if ($redis_config->getRetryInterval() !== 0) {
-                /* reserved should always be NULL */
-                $arguments[] = null;
-                $arguments[] = $redis_config->getRetryInterval();
-            }
-            if ($redis_config->getReadTimeout() !== 0.0) {
-                $arguments[] = $redis_config->getReadTimeout();
-            }
-            $redis->connect(...$arguments);
-            if ($redis_config->getAuth()) {
-                $redis->auth($redis_config->getAuth());
-            }
-            if ($redis_config->getDbIndex() !== 0) {
-                $redis->select($redis_config->getDbIndex());
-            }
-            $this->class = $redis;
+            $this->pool = BaseRedis::getInstance();
         }
+        $this->connection = $this->pool->getConnection();
     }
 
-    public static function getInstance($config = null)
+    public function __call($name, $arguments)
     {
-        if (config('app.enable_redis_pool')) {
-            if (empty(self::$instance)) {
-                if (empty($config)) {
-                    throw new RuntimeException('redis config empty');
-                }
-                if (empty($config['size'])) {
-                    throw new RuntimeException('the size of redis connection pools cannot be empty');
-                }
-                self::$instance = new static($config);
-            }
+        try {
+            $data = $this->connection->{$name}(...$arguments);
+        } catch (\RedisException $e) {
+            $this->pool->close(null);
+            throw $e;
+        }
 
-            return self::$instance;
-        } else {
+        return $data;
+    }
+
+    public function brPop($keys, $timeout)
+    {
+        if ($timeout === 0) {
+            // TODO Need to optimize...
+            $timeout = 99999999999;
+        }
+
+        $this->connection->setOption(\Redis::OPT_READ_TIMEOUT, (string) $timeout);
+
+        $data = [];
+
+        try {
+            $start = time();
+            $data = $this->connection->brPop($keys, $timeout);
+        } catch (\RedisException $e) {
+            $end = time();
+            if ($end - $start < $timeout) {
+                $this->pool->close(null);
+                throw $e;
+            }
+        }
+
+        $this->connection->setOption(\Redis::OPT_READ_TIMEOUT, (string) $this->pool->getConfig()['time_out']);
+
+        return $data;
+    }
+
+    public function blPop($keys, $timeout)
+    {
+        if ($timeout === 0) {
+            // TODO Need to optimize...
+            $timeout = 99999999999;
+        }
+
+        $this->connection->setOption(\Redis::OPT_READ_TIMEOUT, (string) $timeout);
+
+        $data = [];
+
+        try {
+            $start = time();
+            $data = $this->connection->blPop($keys, $timeout);
+        } catch (\RedisException $e) {
+            $end = time();
+            if ($end - $start < $timeout) {
+                $this->pool->close(null);
+                throw $e;
+            }
+        }
+
+        $this->connection->setOption(\Redis::OPT_READ_TIMEOUT, (string) $this->pool->getConfig()['time_out']);
+
+        return $data;
+    }
+
+    public function subscribe($channels, $callback)
+    {
+        $this->connection->setOption(\Redis::OPT_READ_TIMEOUT, '-1');
+
+        try {
+            $data = $this->connection->subscribe($channels, $callback);
+        } catch (\RedisException $e) {
+            $this->pool->close(null);
+            throw $e;
+        }
+
+        $this->connection->setOption(\Redis::OPT_READ_TIMEOUT, (string) $this->pool->getConfig()['time_out']);
+
+        return $data;
+    }
+
+    public function brpoplpush($srcKey, $dstKey, $timeout)
+    {
+        $this->connection->setOption(\Redis::OPT_READ_TIMEOUT, (string) $timeout);
+
+        try {
+            $start = time();
+            $data = $this->connection->brpoplpush($srcKey, $dstKey, $timeout);
+        } catch (\RedisException $e) {
+            $end = time();
+            if ($end - $start < $timeout) {
+                throw $e;
+            }
+            $data = false;
+        }
+
+        $this->connection->setOption(\Redis::OPT_READ_TIMEOUT, (string) $this->pool->getConfig()['time_out']);
+
+        return $data;
+    }
+
+    public function __destruct(){
+        if(config('app.enable_redis_pool')){
             $redis_config_key = config('app.redis_config_key');
             $config = config("redis.{$redis_config_key}");
-            return new self($config);
+            try{
+                $this->connection->select($config['db_index'] ?? 0);
+            } catch (\RedisException $e) {
+                $this->pool->close(null);
+                throw $e;
+            }
         }
-    }
-
-    public function getConnection()
-    {
-        if (config('app.enable_redis_pool')) {
-            return $this->pools->get();
-        } else {
-            return $this->class;
-        }
-    }
-
-    public function close($connection = null)
-    {
-        if (config('app.enable_redis_pool')) {
-            $this->pools->put($connection);
-        }else{
-            $this->class->close();
-        }
-    }
-
-    public function getConfig(): array
-    {
-        return $this->config;
+        $this->pool->close($this->connection);
     }
 }

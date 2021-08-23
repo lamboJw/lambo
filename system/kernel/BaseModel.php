@@ -49,7 +49,7 @@ class BaseModel
 
     public function __construct($db, $config = null)
     {
-        if (! empty($config)) {
+        if (!empty($config)) {
             $this->pool = \system\kernel\PDO::getInstance($db, $config);
         } else {
             $this->pool = \system\kernel\PDO::getInstance($db);

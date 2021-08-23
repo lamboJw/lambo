@@ -10,6 +10,6 @@ class example extends Model
 {
     protected string $db = 'default';
     protected string $tableName = 'test';
-    protected bool $timestamp = true;
+    protected bool $timestamp = false;
 
 }

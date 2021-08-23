@@ -17,7 +17,7 @@ composer install
 ```
 ## 快速开始
 + `php run_server.php` ，控制台输出协程http服务器启动。
-+ 本地浏览器访问 `http://127.0.0.1:10086/test` 。 
++ 本地浏览器访问 `http://127.0.0.1:10086` 。 
 + 可以看到Hello World字样，说明启动成功。
 ## 使用说明
 > 注意：本框架所有类的自动加载都是基于命名空间，且命名空间需要与文件路径保持一致！
@@ -129,7 +129,7 @@ $params：构造函数参数。
 $key：只设置一个值时，传入变量名，当想设置多个值，传入key=>value数组。  
 $value：只设置一个值时，传入变量的值，当想设置多个值，不需传值。  
 
-+ `get($key)`
++ `get($key)`  
 获取全局变量。  
 $key：当类型为string时，返回单个变量，当类型为array时，返回数组中的所有变量。
 
@@ -175,7 +175,7 @@ $key为空时，返回所有header的值。
 + `end($content = '')`  
 将内容发送到浏览器并结束本次响应。慎用，一般响应只需要使用`write()`方法。  
 如果开启了标准输出到页面，使用该方法后，标准输出的内容会抛弃。  
-> 注意：使用该方法后，会直接结束程序。
+> 注意：使用该方法后，会直接结束请求。
 
 + `status($statusCode)`  
 设置响应状态码。
@@ -190,13 +190,10 @@ $length：长度，不传默认到文件末尾。
 重定向页面。
 $location：重定向地址。  
 $http_code：重定向状态码。  
-> 注意：使用该方法后，会直接结束程序。
+> 注意：使用该方法后，会直接结束请求。
 
 + `write($content)`  
 将内容发送到浏览器。  
-
-+ `cookie($name, $value = null, $expires = null, $path = null, $domain = null, $secure = null, $httponly = null, $samesite = null, $priority = null)`  
-设置 HTTP 响应的 cookie 信息，会对 $value 进行`urlencode`处理。  
 
 + `cookie($name, $value = null, $expires = null, $path = null, $domain = null, $secure = null, $httponly = null, $samesite = null, $priority = null)`  
 设置 HTTP 响应的 cookie 信息，会对 $value 进行`urlencode`处理。  
@@ -273,6 +270,7 @@ $format：是否需要对 Key 进行 HTTP 约定格式化【默认 true 会自�
   $data：要更新或插入的数据。  
   
 + `updateOrInsert($where, $data)`  
+  更新或插入数据，先根据条件查询结果，如存在结果，对比传入的数据，如果完全一致，则不会执行更新。  
   $where：查询条件。  
   $data：要更新或插入的数据。
   
@@ -281,12 +279,12 @@ $format：是否需要对 Key 进行 HTTP 约定格式化【默认 true 会自�
 #### 使用方法
 实例化类之后，可以使用Redis扩展中的所有方法。  
  ```
-$redis = new BaseRedis();
+$redis = new system\kernel\Redis();
 $redis->get('key1');
 ```
  
 ### 中间件
-编写的中间件需要放在`app/middleware`文件夹下，实现`Middleware`抽象类。路由中定义的中间件，会自动执行handle方法。当执行通过时，请返回`true`。不通过时，返回的内容会直接发送到浏览器，且结束运行。
+编写的中间件需要放在`app/middleware`文件夹下，实现`Middleware`抽象类。路由中定义的中间件，会自动执行handle方法。当执行通过时，请返回`true`。不通过时，返回的内容会直接发送到浏览器，且结束当前请求。
 
 ### 定义路由
 路由文件存放在`app/routes`文件夹下。`default.php`文件下的路由，没有前置路径。除`default.php`文件外，其他文件内的路由，都会根据文件名作为前置路径，例：  
@@ -305,14 +303,14 @@ $router->route('/test','test','index');
 + 使用中间件  
 `middleware()`：  
 $middleware： 该路由需要使用的中间件名称。中间件名称为`app/middleware.php`中的key。  
-> 注意：单独使用middleware()方法没有任何效果，不许和route()方法一起使用。
+> 注意：单独使用middleware()方法没有任何效果，必须和route()方法一起使用。
 ```
 $router = new Router();
 $router->middleware(['test'])->route('/test','test','index');
 ```
 
 + 定义一组路由
-当多个路由都需要使用同一组中间件，可以使用这个。  
+当多个路由都需要使用同一组中间件或同一个路径时，可以使用这个。  
 `group()`：  
 $middleware： 和`middleware()`方法接收参数一样。  
 $routes：多个路由类实例组成的数组。  

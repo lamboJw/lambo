@@ -8,7 +8,7 @@ use Swoole\Http\Request;
 use Swoole\Http\Response;
 use Swoole\Table;
 use Swoole\WebSocket\CloseFrame;
-use system\kernel\BaseRedis;
+use system\kernel\Redis;
 use system\kernel\HttpServer\CoHttpServer;
 
 class CoWebsocketResponse extends WebsocketResponseBase
@@ -45,7 +45,7 @@ class CoWebsocketResponse extends WebsocketResponseBase
             if (!$this->use_broadcast) {
                 return false;
             }
-            $redis = new BaseRedis();
+            $redis = new Redis();
             $func = 'push';
             $data = serialize($data);
             $redis->publish('websocket_broadcast', json_encode(compact('func', 'fd', 'data', 'opcode', 'flag')));
@@ -66,7 +66,7 @@ class CoWebsocketResponse extends WebsocketResponseBase
             if (!$this->use_broadcast) {
                 return false;
             }
-            $redis = new BaseRedis();
+            $redis = new Redis();
             $func = 'disconnect';
             $redis->publish('websocket_broadcast', json_encode(compact('func', 'fd', 'code', 'reason')));
             return true;
@@ -100,7 +100,7 @@ class CoWebsocketResponse extends WebsocketResponseBase
         if (!$this->use_broadcast) {
             return false;
         }
-        $redis = new BaseRedis();
+        $redis = new Redis();
         $data = serialize($data);
         $func = 'broadcast';
         $fd = $this->fd;

@@ -10,7 +10,7 @@ use Swoole\Process;
 use Swoole\Table;
 use Swoole\WebSocket\Frame;
 use system\kernel\Application;
-use system\kernel\BaseRedis;
+use system\kernel\Redis;
 use system\kernel\WebsocketServer\CoWebsocketResponse;
 use Throwable;
 
@@ -20,7 +20,7 @@ class CoHttpServer extends HttpServerBase
     protected int $max_request = 0;
     public static int $pid;
     protected Process\Pool $pool;
-    protected Table $connections;
+    protected Table $connections;   //所有连接到websocket服务器的连接
 
     public function __construct($pool, $connections)
     {
@@ -186,7 +186,7 @@ class CoHttpServer extends HttpServerBase
             return false;
         }
         go(function () {
-            $redis = new BaseRedis();
+            $redis = new Redis();
             while (true) {
                 $redis->publish('websocket_broadcast', json_encode(['func' => 'check_alive']));
                 Co::sleep(5);
@@ -205,7 +205,7 @@ class CoHttpServer extends HttpServerBase
         }
         go(function () {
             try {
-                $redis = new BaseRedis();
+                $redis = new Redis();
                 $redis->subscribe(['websocket_broadcast'], function (\Redis $redis, $chan, $msg) {
                     $context = Co::getContext(Co::getPcid());
                     if (!isset($context[Application::$class_key])) {
