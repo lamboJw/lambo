@@ -44,7 +44,7 @@ class Server
         }
         $workerNum = config('swoole.server.worker_num', 1);
         $connections = null;
-        if(config('swoole.http.open_websocket')){
+        if (config('swoole.http.open_websocket')) {
             $connections = new Table(config('swoole.http.co_ws_pool_size', 1024));
             $connections->column('is_upgraded', Table::TYPE_INT);
             $connections->create();
@@ -57,7 +57,7 @@ class Server
             });
             $server->start();
         });
-        debug('info',"协程http服务器启动");
+        debug('info', "协程http服务器启动");
         $pool->start();
     }
 
@@ -67,7 +67,7 @@ class Server
     private function swoole_http_server()
     {
         $server = new SwooleHttpServer();
-        debug('info',"异步http服务器启动");
+        debug('info', "异步http服务器启动");
         $server->start();
     }
 }

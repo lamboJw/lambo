@@ -107,7 +107,7 @@ class BaseRedis
     {
         if (config('app.enable_redis_pool')) {
             $this->pools->put($connection);
-        }else{
+        } else {
             $this->class->close();
         }
     }

@@ -7,6 +7,12 @@ if (config('app.load_vendor', false)) {
     require_once 'vendor/autoload.php';
 }
 
+// 设置协程配置
+$coroutine_config = config('swoole.coroutine');
+if (!empty($coroutine_config)) {
+    Co::set($coroutine_config);
+}
+
 //创建redis连接池
 if (config('app.enable_redis_pool')) {
     CO\run(function () {
@@ -28,11 +34,5 @@ if (config('app.enable_mysql_pool')) {
 
 // 自动加载指定library和helper
 autoload_lib_and_helper();
-
-// 设置协程配置
-$coroutine_config = config('swoole.coroutine');
-if (!empty($coroutine_config)) {
-    Co::set($coroutine_config);
-}
 
 (new system\kernel\Server())->run_http_server();

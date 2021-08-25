@@ -10,7 +10,7 @@ $config = [
     'debug_level' => LEVEL_ALL,
 
     // 日志文件的保存路径
-    'log_path' => STATIC_PATH.'/logs',
+    'log_path' => STATIC_PATH . '/logs',
 
     // 记录日志的最高等级
     'log_level' => LEVEL_NONE,

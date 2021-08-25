@@ -9,6 +9,7 @@ use system\helpers\Singleton;
 class Log
 {
     use Singleton;
+
     /**
      * Path to save log files
      *

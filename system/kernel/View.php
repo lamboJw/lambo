@@ -2,6 +2,7 @@
 
 
 namespace system\kernel;
+
 use Xiaoler\Blade\FileViewFinder;
 use Xiaoler\Blade\Factory;
 use Xiaoler\Blade\Compilers\BladeCompiler;
@@ -28,7 +29,8 @@ class View
         $this->factory = new Factory($resolver, new FileViewFinder($file, [VIEW_PATH]));
     }
 
-    public function make($view, $data = []){
+    public function make($view, $data = [])
+    {
         return $this->factory->make($view, $data);
     }
 }

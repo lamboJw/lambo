@@ -40,7 +40,7 @@ class Model extends BaseModel
     {
         if (empty($this->db)) {
             $mysql_config = config('database');
-            if(count($mysql_config) == 0){
+            if (count($mysql_config) == 0) {
                 throw new RuntimeException('未配置数据库');
             }
             reset($mysql_config);
@@ -298,13 +298,13 @@ class Model extends BaseModel
         $info = $this->get($this->tableName, '*', $where);
         if (!empty($info)) {
             foreach ($data as $key => $val) {   //检查要更新的字段内容是否一样，一样的就不更新
-                if($val === $info[$key]){
+                if ($val === $info[$key]) {
                     unset($data[$key]);
                 }
             }
-            if(!empty($data)){  //如果还有不一样的，才执行更新
+            if (!empty($data)) {  //如果还有不一样的，才执行更新
                 return $this->edit($data, $where);
-            }else{      //完全一样的，就不执行更新
+            } else {      //完全一样的，就不执行更新
                 return 1;
             }
         } else {

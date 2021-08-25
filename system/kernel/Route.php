@@ -41,6 +41,6 @@ class Route
     {
         $class = '\\app\\controllers' . ((empty($this->namespace) || $this->namespace == 'default') ? '' : "\\{$this->namespace}") . '\\' . $this->controller;
         $prefix = (empty($this->namespace) || $this->namespace == 'default') ? '' : "/{$this->namespace}";
-        return ['pattern' => $prefix.$this->path, 'class' => $class, 'func' => $this->function, 'middleware' => $this->middleware];
+        return ['pattern' => $prefix . $this->path, 'class' => $class, 'func' => $this->function, 'middleware' => $this->middleware];
     }
 }

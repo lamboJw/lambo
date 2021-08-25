@@ -3,7 +3,7 @@
 
 namespace system\kernel\HttpServer;
 
-use co;
+use Swoole\Coroutine\System;
 use system\kernel\Application;
 use system\kernel\Router;
 use system\kernel\WebsocketServer\WebsocketHandlerInterface;
@@ -76,8 +76,11 @@ abstract class HttpServerBase
     }
 
     abstract protected function onRequest();
+
     abstract protected function websocket();
+
     abstract protected function reload();
+
     public function start()
     {
         $this->server->start();
@@ -146,26 +149,27 @@ abstract class HttpServerBase
      * app路径下，除了helpers和libraries文件夹下文件外的所有文件，
      * 如有文件更新过，则会平滑重启当前Worker进程
      */
-    protected function auto_reload(){
-        go(function (){
+    protected function auto_reload()
+    {
+        go(function () {
             $file_list = [];
-            while (true){
+            while (true) {
                 $files = get_included_files();
                 foreach ($files as $file) {
                     $app_path = str_replace('/', '\/', APP_PATH);
                     $reg = "/^{$app_path}\/((?!helpers|libraries).*)$/";
-                    if(preg_match($reg, $file, $match)){
+                    if (preg_match($reg, $file, $match)) {
                         $time = @filemtime($file);
-                        if(!isset($file_list[$file])){
+                        if (!isset($file_list[$file])) {
                             $file_list[$file] = $time;
-                        }elseif($time != $file_list[$file]){
-                            debug('debug', $file.'文件更新了，重启服务器:'.posix_getpid()."\n");
+                        } elseif ($time != $file_list[$file]) {
+                            debug('debug', $file . '文件更新了，重启服务器:' . posix_getpid() . "\n");
                             $this->reload();
                             break 2;
                         }
                     }
                 }
-                Co::sleep(5);
+                System::sleep(5);
             }
         });
     }

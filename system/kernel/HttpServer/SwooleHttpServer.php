@@ -31,8 +31,9 @@ class SwooleHttpServer extends HttpServerBase
         });
     }
 
-    protected function onWorkerStart(){
-        $this->server->on('WorkerStart', function ($server, $worker_id){
+    protected function onWorkerStart()
+    {
+        $this->server->on('WorkerStart', function ($server, $worker_id) {
             $this->auto_reload();
         });
     }

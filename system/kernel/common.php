@@ -102,12 +102,12 @@ if (!function_exists('config')) {
     function config($name, $default = null)
     {
         $config = config_all();
-        if(empty($name)){
+        if (empty($name)) {
             return null;
         }
         $name_arr = explode('.', $name);
-        foreach ($name_arr as $item){
-            if($config == null){
+        foreach ($name_arr as $item) {
+            if ($config == null) {
                 break;
             }
             $config = $config[$item] ?? null;

@@ -142,7 +142,7 @@ class BaseModel
         }
         $statement = $this->pdo->prepare($query);
 
-        if (! $statement) {
+        if (!$statement) {
             $this->errorInfo = $this->pdo->errorInfo();
             $this->statement = null;
 
@@ -161,7 +161,7 @@ class BaseModel
 
         $this->errorInfo = $statement->errorInfo();
 
-        if (! $execute) {
+        if (!$execute) {
             $this->statement = null;
         }
 
@@ -254,7 +254,7 @@ class BaseModel
 
         $this->columnMap($columns, $column_map, true);
 
-        if (! $this->statement) {
+        if (!$this->statement) {
             return false;
         }
 
@@ -288,7 +288,7 @@ class BaseModel
         $fields = [];
         $map = [];
 
-        if (! isset($datas[0])) {
+        if (!isset($datas[0])) {
             $datas = [$datas];
         }
 
@@ -313,7 +313,7 @@ class BaseModel
 
                 $values[] = $map_key;
 
-                if (! isset($data[$key])) {
+                if (!isset($data[$key])) {
                     $map[$map_key] = [null, PDO::PARAM_NULL];
                 } else {
                     $value = $data[$key];
@@ -332,7 +332,7 @@ class BaseModel
                         case 'object':
                             $value = serialize($value);
 
-                            // no break
+                        // no break
                         case 'NULL':
                         case 'resource':
                         case 'boolean':
@@ -399,7 +399,7 @@ class BaseModel
                     case 'object':
                         $value = serialize($value);
 
-                        // no break
+                    // no break
                     case 'NULL':
                     case 'resource':
                     case 'boolean':
@@ -427,7 +427,7 @@ class BaseModel
 
     public function replace($table, $columns, $where = null)
     {
-        if (! is_array($columns) || empty($columns)) {
+        if (!is_array($columns) || empty($columns)) {
             return false;
         }
 
@@ -440,8 +440,8 @@ class BaseModel
                     $map_key = $this->mapKey();
 
                     $stack[] = $this->columnQuote($column) . ' = REPLACE(' . $this->columnQuote(
-                        $column
-                    ) . ', ' . $map_key . 'a, ' . $map_key . 'b)';
+                            $column
+                        ) . ', ' . $map_key . 'a, ' . $map_key . 'b)';
 
                     $map[$map_key . 'a'] = [$old, PDO::PARAM_STR];
                     $map[$map_key . 'b'] = [$new, PDO::PARAM_STR];
@@ -449,7 +449,7 @@ class BaseModel
             }
         }
 
-        if (! empty($stack)) {
+        if (!empty($stack)) {
             return $this->exec(
                 'UPDATE ' . $this->tableQuote($table) . ' SET ' . implode(', ', $stack) . $this->whereClause(
                     $where,
@@ -481,7 +481,7 @@ class BaseModel
 
         $query = $this->exec($this->selectContext($table, $map, $join, $columns, $where) . ' LIMIT 1', $map);
 
-        if (! $this->statement) {
+        if (!$this->statement) {
             return false;
         }
 
@@ -514,7 +514,7 @@ class BaseModel
             $map
         );
 
-        if (! $this->statement) {
+        if (!$this->statement) {
             return false;
         }
 
@@ -625,7 +625,7 @@ class BaseModel
             $this->in_transaction = false;
         }
 
-        if (! $this->in_transaction) {
+        if (!$this->in_transaction) {
             $this->pool->close($connection);
             return true;
         }
@@ -665,18 +665,18 @@ class BaseModel
 
     protected function buildRaw($raw, &$map)
     {
-        if (! $this->isRaw($raw)) {
+        if (!$this->isRaw($raw)) {
             return false;
         }
 
         $query = preg_replace_callback(
             '/(([`\']).*?)?((FROM|TABLE|INTO|UPDATE|JOIN)\s*)?\<(([a-zA-Z0-9_]+)(\.[a-zA-Z0-9_]+)?)\>(.*?\2)?/i',
             function ($matches) {
-                if (! empty($matches[2]) && isset($matches[8])) {
+                if (!empty($matches[2]) && isset($matches[8])) {
                     return $matches[0];
                 }
 
-                if (! empty($matches[4])) {
+                if (!empty($matches[4])) {
                     return $matches[1] . $matches[4] . ' ' . $this->tableQuote($matches[5]);
                 }
 
@@ -687,7 +687,7 @@ class BaseModel
 
         $raw_map = $raw->map;
 
-        if (! empty($raw_map)) {
+        if (!empty($raw_map)) {
             foreach ($raw_map as $key => $value) {
                 $map[$key] = $this->typeMap($value, gettype($value));
             }
@@ -698,7 +698,7 @@ class BaseModel
 
     protected function tableQuote($table)
     {
-        if (! preg_match('/^[a-zA-Z0-9_]+$/i', $table)) {
+        if (!preg_match('/^[a-zA-Z0-9_]+$/i', $table)) {
             throw new InvalidArgumentException("Incorrect table name \"{$table}\"");
         }
 
@@ -733,7 +733,7 @@ class BaseModel
 
     protected function columnQuote($string)
     {
-        if (! preg_match('/^[a-zA-Z0-9_]+(\.?[a-zA-Z0-9_]+)?$/i', $string)) {
+        if (!preg_match('/^[a-zA-Z0-9_]+(\.?[a-zA-Z0-9_]+)?$/i', $string)) {
             throw new InvalidArgumentException("Incorrect column name \"{$string}\"");
         }
 
@@ -757,13 +757,13 @@ class BaseModel
         }
 
         foreach ($columns as $key => $value) {
-            if (! is_int($key) && is_array($value) && $root && count(array_keys($columns)) === 1) {
+            if (!is_int($key) && is_array($value) && $root && count(array_keys($columns)) === 1) {
                 $stack[] = $this->columnQuote($key);
 
                 $stack[] = $this->columnPush($value, $map, false, $is_join);
             } elseif (is_array($value)) {
                 $stack[] = $this->columnPush($value, $map, false, $is_join);
-            } elseif (! is_int($key) && $raw = $this->buildRaw($value, $map)) {
+            } elseif (!is_int($key) && $raw = $this->buildRaw($value, $map)) {
                 preg_match('/(?<column>[a-zA-Z0-9_\.]+)(\s*\[(?<type>(String|Bool|Int|Number))\])?/i', $key, $match);
 
                 $stack[] = $raw . ' AS ' . $this->columnQuote($match['column']);
@@ -778,12 +778,12 @@ class BaseModel
                     $match
                 );
 
-                if (! empty($match['alias'])) {
+                if (!empty($match['alias'])) {
                     $stack[] = $this->columnQuote($match['column']) . ' AS ' . $this->columnQuote($match['alias']);
 
                     $columns[$key] = $match['alias'];
 
-                    if (! empty($match['type'])) {
+                    if (!empty($match['type'])) {
                         $columns[$key] .= ' [' . $match['type'] . ']';
                     }
                 } else {
@@ -844,8 +844,8 @@ class BaseModel
                 preg_match('/([a-zA-Z0-9_\.]+)\[(?<operator>\>\=?|\<\=?|\!?\=)\]([a-zA-Z0-9_\.]+)/i', $value, $match)
             ) {
                 $stack[] = $this->columnQuote($match[1]) . ' ' . $match['operator'] . ' ' . $this->columnQuote(
-                    $match[3]
-                );
+                        $match[3]
+                    );
             } else {
                 preg_match(
                     '/([a-zA-Z0-9_\.]+)(\[(?<operator>\>\=?|\<\=?|\!|\<\>|\>\<|\!?~|REGEXP)\])?/i',
@@ -921,7 +921,7 @@ class BaseModel
                         foreach ($value as $index => $item) {
                             $item = strval($item);
 
-                            if (! preg_match('/(\[.+\]|[\*\?\!\%#^-_]|%.+|.+%)/', $item)) {
+                            if (!preg_match('/(\[.+\]|[\*\?\!\%#^-_]|%.+|.+%)/', $item)) {
                                 $item = '%' . $item . '%';
                             }
 
@@ -939,8 +939,8 @@ class BaseModel
                             $stack[] = '(' . $column . ' BETWEEN ' . $map_key . 'a AND ' . $map_key . 'b)';
 
                             $data_type = (is_numeric($value[0]) && is_numeric(
-                                $value[1]
-                            )) ? PDO::PARAM_INT : PDO::PARAM_STR;
+                                    $value[1]
+                                )) ? PDO::PARAM_INT : PDO::PARAM_STR;
 
                             $map[$map_key . 'a'] = [$value[0], $data_type];
                             $map[$map_key . 'b'] = [$value[1], $data_type];
@@ -1000,7 +1000,7 @@ class BaseModel
                 )
             );
 
-            if (! empty($conditions)) {
+            if (!empty($conditions)) {
                 $where_clause = ' WHERE ' . $this->dataImplode($conditions, $map, ' AND');
             }
 
@@ -1093,14 +1093,14 @@ class BaseModel
 
         if (
             isset($join_key[0]) &&
-            strpos((string) $join_key[0], '[') === 0
+            strpos((string)$join_key[0], '[') === 0
         ) {
             $is_join = true;
             $table_query .= ' ' . $this->buildJoin($table, $join);
         } else {
             if (is_null($columns)) {
                 if (
-                    ! is_null($where) ||
+                    !is_null($where) ||
                     (is_array($join) && isset($column_fn))
                 ) {
                     $where = $join;
@@ -1177,7 +1177,7 @@ class BaseModel
 
                                     // For ['column1' => 'column2']
                                     $table . '."' . $key . '"'
-                            ) .
+                                ) .
                                 ' = ' .
                                 $this->tableQuote(
                                     isset($match['alias']) ? $match['alias'] : $match['table']
@@ -1215,7 +1215,7 @@ class BaseModel
                     $key_match
                 );
 
-                $column_key = ! empty($key_match['alias']) ?
+                $column_key = !empty($key_match['alias']) ?
                     $key_match['alias'] :
                     $key_match['column'];
 
@@ -1238,7 +1238,7 @@ class BaseModel
                 } else {
                     $stack[$key] = [$column_key, 'String'];
                 }
-            } elseif (! is_int($key) && is_array($value)) {
+            } elseif (!is_int($key) && is_array($value)) {
                 if ($root && count(array_keys($columns)) === 1) {
                     $stack[$key] = [$key, 'String'];
                 }
@@ -1300,13 +1300,13 @@ class BaseModel
 
                     switch ($map[1]) {
                         case 'Number':
-                            $stack[$column_key] = (float) $item;
+                            $stack[$column_key] = (float)$item;
                             break;
                         case 'Int':
-                            $stack[$column_key] = (int) $item;
+                            $stack[$column_key] = (int)$item;
                             break;
                         case 'Bool':
-                            $stack[$column_key] = (bool) $item;
+                            $stack[$column_key] = (bool)$item;
                             break;
                         case 'Object':
                             $stack[$column_key] = unserialize($item);
@@ -1333,7 +1333,7 @@ class BaseModel
 
     private function realGetConn()
     {
-        if (! $this->in_transaction) {
+        if (!$this->in_transaction) {
             $this->pdo = $this->pool->getConnection();
             $this->pdo->exec('SET SQL_MODE=ANSI_QUOTES');
         }
@@ -1345,7 +1345,7 @@ class BaseModel
 
         $query = $this->exec($this->selectContext($table, $map, $join, $column, $where, strtoupper($type)), $map);
 
-        if (! $this->statement) {
+        if (!$this->statement) {
             return false;
         }
 

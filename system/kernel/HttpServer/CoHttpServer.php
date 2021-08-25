@@ -5,6 +5,7 @@ namespace system\kernel\HttpServer;
 
 use Co\Http\Server;
 use Co;
+use Swoole\Coroutine\System;
 use Swoole\ExitException;
 use Swoole\Process;
 use Swoole\Table;
@@ -13,7 +14,6 @@ use system\kernel\Application;
 use system\kernel\Redis;
 use system\kernel\WebsocketServer\CoWebsocketResponse;
 use Throwable;
-use function Sodium\add;
 
 class CoHttpServer extends HttpServerBase
 {
@@ -78,7 +78,8 @@ class CoHttpServer extends HttpServerBase
     }
 
 
-    protected function reload(){
+    protected function reload()
+    {
         $process = $this->pool->getProcess();
         $process->kill(self::$pid, SIGTERM);
     }
@@ -113,9 +114,9 @@ class CoHttpServer extends HttpServerBase
             $ws_resp = ws_response();
             $this->subscribe();
             $ws_resp->upgrade();
-            try{
+            try {
                 $this->ws_service->onOpen();
-            }catch (Throwable $e){
+            } catch (Throwable $e) {
                 if (!$e instanceof ExitException) {
                     debug('error', 'onOpen产生错误：' . $e->getMessage());
                     throw $e;
@@ -139,9 +140,9 @@ class CoHttpServer extends HttpServerBase
                     debug('debug', "客户端fd#" . $ws_resp->fd . " 发出关闭指令");
                     $ws_resp->disconnect($ws_resp->fd, WEBSOCKET_CLOSE_NORMAL, '关闭连接');
                 } elseif (get_class($ws_resp->frame) === \Swoole\WebSocket\CloseFrame::class && !config('swoole.websocket.open_websocket_close_frame')) {
-                    try{
+                    try {
                         $this->ws_service->onClose();
-                    }catch (Throwable $e){
+                    } catch (Throwable $e) {
                         if (!$e instanceof ExitException) {
                             debug('error', 'onClose产生错误：' . $e->getMessage());
                             throw $e;
@@ -159,9 +160,9 @@ class CoHttpServer extends HttpServerBase
                     $pong->opcode = WEBSOCKET_OPCODE_PING;
                     $ws_resp->push($ws_resp->fd, $pong);
                 } else {
-                    try{
+                    try {
                         $this->ws_service->onMessage();
-                    }catch (Throwable $e){
+                    } catch (Throwable $e) {
                         if (!$e instanceof ExitException) {
                             debug('error', 'onMessage产生错误：' . $e->getMessage());
                             throw $e;
@@ -192,7 +193,7 @@ class CoHttpServer extends HttpServerBase
             $redis = new Redis();
             while (true) {
                 $redis->publish('websocket_broadcast', json_encode(['func' => 'check_alive']));
-                Co::sleep(5);
+                System::sleep(5);
             }
         });
     }
