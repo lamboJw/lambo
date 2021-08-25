@@ -13,6 +13,7 @@ use system\kernel\Application;
 use system\kernel\Redis;
 use system\kernel\WebsocketServer\CoWebsocketResponse;
 use Throwable;
+use function Sodium\add;
 
 class CoHttpServer extends HttpServerBase
 {
@@ -28,21 +29,17 @@ class CoHttpServer extends HttpServerBase
         self::$pid = posix_getpid();
         $this->pool = $pool;
         // 没有在协程容器中
-        if (Co::getPcid() == false) {
+        if (Co::getPcid() === false) {
             throw new \RuntimeException('协程风格HTTP服务器不能运行在非协程容器内');
         }
         $this->server = new Server($this->http_config['host'], $this->http_config['port'], $this->http_config['ssl'], true);
         $this->max_request = $this->server_config['max_request'];
         $this->onRequest();
-        if (config('swoole.http.open_websocket', false)) {
-            $ws_service = config('swoole.http.websocket_service');
-            if (empty($ws_service)) {
-                throw new \RuntimeException('请配置swoole.http.websocket_service项');
-            }
-            $this->ws_service = new $ws_service();
+        if (!empty($this->http_config['open_websocket'])) {
             $this->connections = $connections;
             $this->websocket();
         }
+        $this->auto_reload();
     }
 
     /**
@@ -80,6 +77,12 @@ class CoHttpServer extends HttpServerBase
         $this->server->shutdown();
     }
 
+
+    protected function reload(){
+        $process = $this->pool->getProcess();
+        $process->kill(self::$pid, SIGTERM);
+    }
+
     /**
      * 静态文件处理
      */
@@ -102,7 +105,7 @@ class CoHttpServer extends HttpServerBase
     /**
      * websocket服务
      */
-    private function websocket()
+    protected function websocket()
     {
         $this->check_alive();
         $this->server->handle('/websocket', function (\Swoole\Http\Request $request, \Swoole\Http\Response $ws) {    //websocket服务器

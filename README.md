@@ -310,7 +310,7 @@ $router->middleware(['test'])->route('/test','test','index');
 ```
 
 + 定义一组路由
-当多个路由都需要使用同一组中间件或同一个路径时，可以使用这个。  
+当多个路由都需要使用同一组中间件时，可以使用这个。  
 `group()`：  
 $middleware： 和`middleware()`方法接收参数一样。  
 $routes：多个路由类实例组成的数组。  
@@ -338,7 +338,7 @@ $data：传递到视图的变量
 ### HTTP服务器
 使用`app.server_type`来控制启动的HTTP服务器类型。
 #### 协程风格
-使用进程池+协程服务器实现，类似异步风格的BASE模式，多个子进程开启相同的纯协程HTTP服务器，对同一端口监听，争抢请求。  
+使用进程池+协程服务器实现，类似异步风格的SWOOLE_BASE模式，多个子进程开启相同的纯协程HTTP服务器，对同一端口监听，争抢请求。  
 目前支持的`swoole.server`配置项有：
 + worker_num
 + max_request
@@ -349,6 +349,9 @@ $data：传递到视图的变量
 
 #### 异步风格
 使用异步风格服务器，`swoole.server`所有配置项都能使用，默认使用SWOOLE_BASE模式。  
+
+#### 代码热更新
+每5秒会扫描app路径下，除了helpers和libraries文件夹下文件外的所有文件，如有文件更新过，则会平滑重启当前Worker进程。  
 
 ### Websocket服务器
 跟随HTTP服务器一同启动，与HTTP服务器使用同一端口，使用`ws://host:port/websocket`连接。  

@@ -19,7 +19,8 @@ class Debug
             return false;
         }
         $old = app()->ob_get_all();
-        echo $level . ' - ' . date("Y-m-d H:i:s") . ' --> ' . var_export($msg, true) . "\n";
+        echo $level . ' - ' . date("Y-m-d H:i:s") . ' --> ' . var_export($msg, true);
+        echo "\n";
         app()->ob_restore_all($old);
         log_message($level, $msg);
     }

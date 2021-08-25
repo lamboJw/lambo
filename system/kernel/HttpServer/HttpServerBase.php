@@ -3,6 +3,7 @@
 
 namespace system\kernel\HttpServer;
 
+use co;
 use system\kernel\Application;
 use system\kernel\Router;
 use system\kernel\WebsocketServer\WebsocketHandlerInterface;
@@ -65,10 +66,18 @@ abstract class HttpServerBase
         $this->server_config = array_replace_recursive($this->server_config, config('swoole.server', []));
         $this->websocket_config = array_replace_recursive($this->websocket_config, config('swoole.websocket', []));
         $this->route_map = Router::load_routes();
+        if (!empty($this->http_config['open_websocket'])) {
+            $ws_service = $this->http_config['websocket_service'] ?? '';
+            if (empty($ws_service)) {
+                throw new \RuntimeException('请配置swoole.http.websocket_service项');
+            }
+            $this->ws_service = new $ws_service();
+        }
     }
 
     abstract protected function onRequest();
-
+    abstract protected function websocket();
+    abstract protected function reload();
     public function start()
     {
         $this->server->start();
@@ -130,5 +139,34 @@ abstract class HttpServerBase
         }
         Application::destroy();
         return;
+    }
+
+    /**
+     * 自动平滑热更新代码（每5秒检测一次）
+     * app路径下，除了helpers和libraries文件夹下文件外的所有文件，
+     * 如有文件更新过，则会平滑重启当前Worker进程
+     */
+    protected function auto_reload(){
+        go(function (){
+            $file_list = [];
+            while (true){
+                $files = get_included_files();
+                foreach ($files as $file) {
+                    $app_path = str_replace('/', '\/', APP_PATH);
+                    $reg = "/^{$app_path}\/((?!helpers|libraries).*)$/";
+                    if(preg_match($reg, $file, $match)){
+                        $time = @filemtime($file);
+                        if(!isset($file_list[$file])){
+                            $file_list[$file] = $time;
+                        }elseif($time != $file_list[$file]){
+                            debug('debug', $file.'文件更新了，重启服务器:'.posix_getpid()."\n");
+                            $this->reload();
+                            break 2;
+                        }
+                    }
+                }
+                Co::sleep(5);
+            }
+        });
     }
 }
