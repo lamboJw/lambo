@@ -96,6 +96,7 @@ abstract class HttpServerBase
         }
         app()->set_request($request);
         app()->set_response($response);
+        app()->set_session();
         try {
             if (array_key_exists($request->server['request_uri'], $route_map)) {
                 $route = $route_map[$request->server['request_uri']];

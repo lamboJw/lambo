@@ -6,6 +6,8 @@ use Swoole\Coroutine;
 use system\helpers\CoroutineSingleton;
 use system\kernel\HttpServer\Request;
 use system\kernel\HttpServer\Response;
+use system\kernel\Session\SessionManager;
+use system\kernel\Session\SessionStore;
 use system\kernel\WebsocketServer\CoWebsocketResponse;
 use system\kernel\WebsocketServer\SwooleWebsocketResponse;
 use system\kernel\WebsocketServer\WebsocketResponseBase;
@@ -74,10 +76,26 @@ class Application
         return $this->singleton('websocket_response');
     }
 
+    public function set_session()
+    {
+        if (config('session.start_session')) {
+            $sessionManager = new SessionManager();
+            $sessionStore = $sessionManager->load_session();
+            $this->context['singleton_class']['session'] = $sessionStore;
+        }
+    }
+
+    public function session(): SessionStore
+    {
+        if (config('session.start_session')) {
+            return $this->singleton('session');
+        }
+    }
+
     /**
      * 获取一个单例的类
      * @param string $key 类别名
-     * @param string $class 类
+     * @param string $class 类名
      * @param mixed ...$params 构造函数参数
      * @return mixed
      */

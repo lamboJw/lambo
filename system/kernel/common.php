@@ -237,6 +237,21 @@ if (!function_exists('api_response')) {
     }
 }
 
+if (!function_exists('session')) {
+    function session($key, $value = null)
+    {
+        if(config('session.start_session')){
+            if($value === null){
+                return app()->session()->get($key);
+            }else{
+                return app()->session()->set($key, $value);
+            }
+        }else{
+            return null;
+        }
+    }
+}
+
 if (!function_exists('log_message')) {
     function log_message($level, $message)
     {
