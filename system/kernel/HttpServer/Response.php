@@ -6,6 +6,8 @@ class Response
 {
     private \Swoole\Http\Response $response;
 
+    protected string $response_content = '';
+
     public function __construct(\Swoole\Http\Response $response)
     {
         $this->response = $response;
@@ -23,6 +25,13 @@ class Response
 
     public function end($content = '')
     {
+        if(config('session.start_session')){
+            $expires = time() + config('session.max_life_time', 86400);
+            $this->cookie(config('session.session_id_name'), get_session_id(), $expires);
+        }
+        if(!empty($this->response_content)){
+            $this->response->write($this->response_content);
+        }
         if (!empty($content)) {
             $this->response->end($content);
         } else {
@@ -49,7 +58,8 @@ class Response
 
     public function write($content)
     {
-        return $this->response->write($content);
+        $this->response_content .= $content;
+        return true;
     }
 
     /**

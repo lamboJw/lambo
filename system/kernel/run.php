@@ -32,6 +32,23 @@ if (config('app.enable_mysql_pool')) {
     });
 }
 
+//开启session后，执行session垃圾回收
+if (config('session.start_session')){
+    $main_pid = posix_getpid();
+    $session_gc_process = new Swoole\Process(function (\Swoole\Process $session_gc_process) use ($main_pid) {
+        $manager = new \system\kernel\Session\SessionManager();
+        while (true){
+            if(!Swoole\Process::kill($main_pid, 0)){
+                $session_gc_process->exit();
+                break;
+            }
+            $manager->gc();
+            sleep(5);
+        }
+    });
+    $session_gc_process->start();
+}
+
 // 自动加载指定library和helper
 autoload_lib_and_helper();
 

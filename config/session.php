@@ -10,7 +10,7 @@ $config = [
     'samesite' => 'Lax',
 
     //session有效时间（秒）
-    'expire_time' => 86400,
+    'max_life_time' => 86400,
 
     //保存session信息的驱动，file，redis，database
     'driver' => 'file',

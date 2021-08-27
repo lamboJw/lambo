@@ -20,8 +20,8 @@ class SwooleHttpServer extends HttpServerBase
             $this->server = new http_server($this->http_config['host'], $this->http_config['port'], $this->http_config['server_mode'], $this->http_config['socket_type']);
         }
         $this->server->set($this->server_config);
-        $this->onRequest();
         $this->onWorkerStart();
+        $this->onRequest();
     }
 
     protected function onRequest()

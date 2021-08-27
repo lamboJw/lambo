@@ -14,15 +14,21 @@ class SessionStore
      */
     protected array $attributes = [];
 
+    /**
+     * @var string
+     */
     protected string $session_id;
 
     protected SessionHandlerInterface $handler;
 
+    protected string $session_id_name;
+
     public function __construct($handler)
     {
+        $this->session_id_name = (string)config('session.session_id_name', 'lambo_session');
         $this->get_session_id();
         $this->handler = $handler;
-        $this->load_session();
+        $this->read_session();
     }
 
     protected function create_session_id()
@@ -34,17 +40,20 @@ class SessionStore
 
     protected function get_session_id()
     {
-        $session_id_name = config('session.session_id_name', 'lambo_session');
-        $this->session_id = request()->cookie($session_id_name);
+        $this->session_id = (string)request()->cookie($this->session_id_name);
         if (empty($this->session_id)) {
-            $this->session_id = (string)request($session_id_name);
-            if (!empty($this->session_id)) {
+            $this->session_id = (string)request($this->session_id_name);
+            if (empty($this->session_id)) {
                 $this->session_id = $this->create_session_id();
             }
         }
     }
 
-    protected function load_session()
+    public function get_sid(){
+        return $this->session_id;
+    }
+
+    protected function read_session()
     {
         $data = $this->handler->read($this->session_id);
         if (!empty($data)) {

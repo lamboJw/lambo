@@ -37,4 +37,9 @@ class SessionManager
         $handler = $this->driver_handler();
         return new SessionStore($handler);
     }
+
+    public function gc(){
+        $handler = $this->driver_handler();
+        $handler->gc(config('session.max_life_time'));
+    }
 }

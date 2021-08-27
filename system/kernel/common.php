@@ -68,7 +68,7 @@ if (!function_exists('get_dir_files')) {
             } else {                                //是文件
                 $file_info = pathinfo($file_path);  //获取扩展名
                 if (!isset($file_info['extension'])) {
-                    continue;
+                    $file_info['extension'] = '';
                 }
                 $extension = strtolower($file_info['extension']);
                 if (empty($ext) || $extension == $ext) {
@@ -80,6 +80,22 @@ if (!function_exists('get_dir_files')) {
     }
 }
 
+if (!function_exists('dir_exists')) {
+    function dir_exists($path)
+    {
+        $root = rtrim(ROOT_PATH, '/') . '/';
+        $path = str_replace($root, '', $path);
+        $path_arr = explode('/', $path);
+        $cur_path = $root;
+        foreach ($path_arr as $item) {
+            $cur_path .= $item . '/';
+            if (!is_dir($cur_path)) {
+                mkdir($cur_path);
+            }
+        }
+        return true;
+    }
+}
 
 if (!function_exists('config_all')) {
     function &config_all()
@@ -175,6 +191,10 @@ if (!function_exists('app')) {
 }
 
 if (!function_exists('request')) {
+    /**
+     * @param mixed ...$keys
+     * @return array|mixed|null|\system\kernel\HttpServer\Request
+     */
     function request(...$keys)
     {
         if (!\system\kernel\Application::isInstantiated()) {
@@ -190,6 +210,10 @@ if (!function_exists('request')) {
 
 
 if (!function_exists('response')) {
+    /**
+     * @param string $data
+     * @return mixed|\system\kernel\HttpServer\Response
+     */
     function response($data = '')
     {
         if (!\system\kernel\Application::isInstantiated()) {
@@ -204,7 +228,7 @@ if (!function_exists('response')) {
 }
 
 if (!function_exists('ws_response')) {
-    function ws_response()
+    function ws_response(): \system\kernel\WebsocketServer\WebsocketResponseBase
     {
         if (!\system\kernel\Application::isInstantiated()) {
             throw new RuntimeException('Application未实例化');
@@ -224,7 +248,7 @@ if (!function_exists('server')) {
 }
 
 if (!function_exists('api_json')) {
-    function api_json($code = 1, $msg = 'success', $data = [])
+    function api_json($code = 1, $msg = 'success', $data = []): string
     {
         return json_encode(compact('code', 'msg', 'data'));
     }
@@ -240,14 +264,37 @@ if (!function_exists('api_response')) {
 if (!function_exists('session')) {
     function session($key, $value = null)
     {
-        if(config('session.start_session')){
-            if($value === null){
+        if (config('session.start_session')) {
+            if ($value === null) {
                 return app()->session()->get($key);
-            }else{
+            } else {
                 return app()->session()->set($key, $value);
             }
-        }else{
+        } else {
             return null;
+        }
+    }
+}
+
+if (!function_exists('get_session_id')) {
+    function get_session_id()
+    {
+        if (config('session.start_session')) {
+            return app()->session()->get_sid();
+        } else {
+            return null;
+        }
+    }
+}
+
+
+if (!function_exists('cookie')) {
+    function cookie($key, $value = null, $expires = null, $path = null, $domain = null, $secure = null, $httponly = null, $samesite = null, $priority = null)
+    {
+        if ($value === null) {
+            return app()->request()->cookie($key);
+        } else {
+            app()->response()->cookie($key, $value, $expires, $path, $domain, $secure, $httponly, $samesite, $priority);
         }
     }
 }
