@@ -156,7 +156,6 @@ abstract class HttpServerBase
             $file_list = [];
             while (true) {
                 $files = get_included_files();
-                $is_reload = false;
                 foreach ($files as $file) {
                     $app_path = str_replace('/', '\/', APP_PATH);
                     $reg = "/^{$app_path}\/((?!helpers|libraries).*)$/";
@@ -167,14 +166,11 @@ abstract class HttpServerBase
                         } elseif ($time != $file_list[$file]) {
                             debug('debug', $file . '文件更新了，重启服务器:' . posix_getpid() . "\n");
                             $this->reload();
-                            $is_reload = true;
                             break 2;
                         }
                     }
                 }
-                if(!$is_reload){
-                    System::sleep(5);
-                }
+                System::sleep(5);
             }
         });
     }
