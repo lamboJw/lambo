@@ -66,7 +66,7 @@ class SwooleHttpServer extends HttpServerBase
     protected function reload()
     {
         if($this->server_config['worker_num'] == 1 && $this->http_config['server_mode'] == SWOOLE_BASE && $this->server_config['max_request'] == 0){
-            echo "BASE模式，worker_num=1，max_request=0，不能自动热更新";
+            debug('ERROR', 'BASE模式，worker_num=1，max_request=0，不能自动热更新');
         }else{
             Process::kill(posix_getpid(), SIGTERM);
         }

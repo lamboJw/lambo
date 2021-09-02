@@ -264,14 +264,10 @@ if (!function_exists('api_response')) {
 if (!function_exists('session')) {
     function session($key, $value = null)
     {
-        if (config('session.start_session')) {
-            if ($value === null) {
-                return app()->session()->get($key);
-            } else {
-                return app()->session()->set($key, $value);
-            }
+        if ($value === null) {
+            return app()->session()->get($key);
         } else {
-            return null;
+            return app()->session()->set($key, $value);
         }
     }
 }
@@ -279,14 +275,16 @@ if (!function_exists('session')) {
 if (!function_exists('get_session_id')) {
     function get_session_id()
     {
-        if (config('session.start_session')) {
-            return app()->session()->get_sid();
-        } else {
-            return null;
-        }
+        return app()->session()->get_sid();
     }
 }
 
+if (!function_exists('session_service')) {
+    function session_service(): \system\kernel\Session\SessionService
+    {
+        return \system\kernel\Session\SessionService::getInstance();
+    }
+}
 
 if (!function_exists('cookie')) {
     function cookie($key, $value = null, $expires = null, $path = null, $domain = null, $secure = null, $httponly = null, $samesite = null, $priority = null)

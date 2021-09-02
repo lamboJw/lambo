@@ -36,8 +36,11 @@ class Model extends BaseModel
     //时间类型
     protected int $time_type = MODEL_DATETIME;
 
-    public function __construct()
+    public function __construct($db = null)
     {
+        if(!empty($db)){
+            $this->db = $db;
+        }
         if (empty($this->db)) {
             $mysql_config = config('database');
             if (count($mysql_config) == 0) {
@@ -51,7 +54,7 @@ class Model extends BaseModel
 
     /**
      * 获取单条数据
-     * @param string|int|array $where 查询条件
+     * @param string|int|array $where 查询条件，可以直接传主键值
      * @param string|array $columns 查询字段
      * @param null|array $join 连表
      * @return array|bool
@@ -61,9 +64,7 @@ class Model extends BaseModel
         if (empty($where)) {
             return false;
         }
-        if (!is_array($where)) {
-            $where = [$this->keyName => $where];
-        }
+        $where = $this->primary_key_where($where);
         if (empty($join)) {
             $join = $columns;
             $columns = $where;
@@ -219,7 +220,7 @@ class Model extends BaseModel
 
     /**
      * 删除
-     * @param array $where 删除条件
+     * @param array|int|string $where 删除条件，可以直接传主键值
      * @return int
      */
     public function del($where)
@@ -227,6 +228,7 @@ class Model extends BaseModel
         if (empty($where)) {
             return false;
         }
+        $where = $this->primary_key_where($where);
         $re = $this->delete($this->tableName, $where);
         return $re->rowCount();
     }
@@ -289,12 +291,13 @@ class Model extends BaseModel
 
     /**
      * 根据条件查询记录，判断更新或插入
-     * @param array $where 判断是否存在的条件
+     * @param array|int|string $where 判断是否存在的条件，可以直接传主键值
      * @param array $data 更新或插入的数据
      * @return string | int
      */
     public function updateOrInsert($where, $data)
     {
+        $where = $this->primary_key_where($where);
         $info = $this->get($this->tableName, '*', $where);
         if (!empty($info)) {
             foreach ($data as $key => $val) {   //检查要更新的字段内容是否一样，一样的就不更新
@@ -310,5 +313,12 @@ class Model extends BaseModel
         } else {
             return $this->add($data);
         }
+    }
+
+    protected function primary_key_where($where){
+        if(!is_array($where)){
+            $where = [$this->keyName => $where];
+        }
+        return $where;
     }
 }

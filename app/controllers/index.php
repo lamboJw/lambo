@@ -4,13 +4,7 @@
 namespace app\controllers;
 
 
-use app\logic\testLogic;
 use app\models\example;
-use co;
-use Co\System;
-use Swoole\Coroutine;
-use Swoole\Coroutine\Barrier;
-use function Co\run;
 
 class index
 {

@@ -7,14 +7,13 @@ use SessionHandlerInterface;
 class SessionManager
 {
 
-    public function __construct()
+    public function driver_handler(): SessionHandlerInterface
     {
-    }
-
-    private function driver_handler(): SessionHandlerInterface
-    {
-        $drive = config('session.driver', 'file');
-        return call_user_func([$this, "create_{$drive}_handler"]);
+        $driver = config('session.driver', 'file');
+        if (!config('session.start_session', false) || !in_array($driver, ['file', 'redis', 'database'])) {
+            $driver = 'empty';
+        }
+        return call_user_func([$this, "create_{$driver}_handler"]);
     }
 
     private function create_file_handler()
@@ -32,14 +31,14 @@ class SessionManager
         return new SessionDatabaseHandler();
     }
 
+    private function create_empty_handler()
+    {
+        return new SessionEmptyHandler();
+    }
+
     public function load_session()
     {
         $handler = $this->driver_handler();
         return new SessionStore($handler);
-    }
-
-    public function gc(){
-        $handler = $this->driver_handler();
-        $handler->gc(config('session.max_life_time'));
     }
 }

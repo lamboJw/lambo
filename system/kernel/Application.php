@@ -78,18 +78,12 @@ class Application
 
     public function set_session()
     {
-        if (config('session.start_session')) {
-            $sessionManager = new SessionManager();
-            $sessionStore = $sessionManager->load_session();
-            $this->context['singleton_class']['session'] = $sessionStore;
-        }
+        $this->context['singleton_class']['session'] = session_service()->start_session();
     }
 
     public function session(): SessionStore
     {
-        if (config('session.start_session')) {
-            return $this->singleton('session');
-        }
+        return $this->singleton('session');
     }
 
     /**

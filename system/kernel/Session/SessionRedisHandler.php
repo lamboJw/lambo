@@ -4,54 +4,74 @@
 namespace system\kernel\Session;
 
 
-class SessionRedisHandler implements \SessionHandlerInterface
-{
+use system\kernel\Redis;
 
-    /**
-     * @inheritDoc
-     */
+class SessionRedisHandler implements \SessionHandlerInterface, SessionPrepareInterface
+{
+    protected Redis $redis;
+    protected string $prefix = 'lambo_session:';
+    protected int $max_life_time = -1;
+
+    public function __construct()
+    {
+        $this->redis = new Redis();
+        $this->max_life_time = (int)config('session.max_life_time');
+        $this->prefix = (string)config('session.table') . ':';
+    }
+
     public function close()
     {
-        // TODO: Implement close() method.
+        return true;
     }
 
     /**
-     * @inheritDoc
+     * 删除指定session
+     * @param $session_id
+     * @return bool
      */
     public function destroy($session_id)
     {
-        // TODO: Implement destroy() method.
+        return $this->redis->del($this->prefix . $session_id);
     }
 
     /**
-     * @inheritDoc
+     * redis自动过期，所以直接返回true
+     * @param $maxlifetime
+     * @return bool
      */
     public function gc($maxlifetime)
     {
-        // TODO: Implement gc() method.
+        return true;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function open($save_path, $name)
     {
-        // TODO: Implement open() method.
+        return true;
     }
 
     /**
-     * @inheritDoc
+     * 获取指定session内容
+     * @param $session_id
+     * @return string
      */
     public function read($session_id)
     {
-        // TODO: Implement read() method.
+        return $this->redis->get($this->prefix . $session_id);
     }
 
     /**
-     * @inheritDoc
+     * 写入session内容
+     * @param $session_id
+     * @param $session_data
+     * @return bool
      */
     public function write($session_id, $session_data)
     {
-        // TODO: Implement write() method.
+        return $this->redis->setex($this->prefix . $session_id, $this->max_life_time, $session_data);
+    }
+
+    public function prepare()
+    {
+
     }
 }

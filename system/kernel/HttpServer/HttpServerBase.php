@@ -94,10 +94,10 @@ abstract class HttpServerBase
             $response->sendfile(STATIC_PATH . '/common/images/favicon.ico');
             return;
         }
-        app()->set_request($request);
-        app()->set_response($response);
-        app()->set_session();
         try {
+            app()->set_request($request);
+            app()->set_response($response);
+            app()->set_session();
             if (array_key_exists($request->server['request_uri'], $route_map)) {
                 $route = $route_map[$request->server['request_uri']];
                 foreach ($route['middleware'] as $middleware) {
@@ -132,7 +132,8 @@ abstract class HttpServerBase
                 debug('ERROR', '捕获错误：' . swoole_last_error() . '， 错误信息：' . $e->getMessage());
                 $response->status(500);
                 if (config('app.debug')) {
-                    $response->end(json_encode(['msg' => $e->getMessage(), 'request' => $request]));
+                    $response->header('Content-Type', 'application/json');
+                    $response->end(json_encode(['msg' => $e->getMessage(), 'trace' => $e->getTrace()]));
                 } else {
                     $response->end('<h1>500 服务器错误</h1>');
                 }

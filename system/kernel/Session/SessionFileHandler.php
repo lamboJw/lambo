@@ -6,7 +6,7 @@ namespace system\kernel\Session;
 
 use Co\System;
 
-class SessionFileHandler implements \SessionHandlerInterface
+class SessionFileHandler implements \SessionHandlerInterface, SessionPrepareInterface
 {
 
     protected string $path;
@@ -83,5 +83,10 @@ class SessionFileHandler implements \SessionHandlerInterface
         $file_path = $this->path . '/' . $session_id;
         $file = fopen($file_path, 'w');
         return System::fwrite($file, $session_data);
+    }
+
+    public function prepare()
+    {
+
     }
 }

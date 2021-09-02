@@ -49,7 +49,8 @@ class SessionStore
         }
     }
 
-    public function get_sid(){
+    public function get_sid()
+    {
         return $this->session_id;
     }
 
@@ -63,7 +64,7 @@ class SessionStore
 
     public function get(string $key)
     {
-        return $this->attributes[$key];
+        return $this->attributes[$key] ?? null;
     }
 
     public function set(string $key, $value)
@@ -74,11 +75,7 @@ class SessionStore
 
     protected function save(): bool
     {
-        if (config('session.start_session')) {
-            return $this->handler->write($this->session_id, @serialize($this->attributes));
-        } else {
-            return true;
-        }
+        return $this->handler->write($this->session_id, @serialize($this->attributes));
     }
 
     public function __destruct()
