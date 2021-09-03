@@ -13,7 +13,7 @@ class Spinlock
 
     /**
      * Spinlock constructor.
-     * @param int $timeout 超时时间，0为永不超时（单位：毫秒）
+     * @param int $timeout 超时时间，-1为永不超时（单位：毫秒）
      */
     public function __construct(int $timeout = 200)
     {
@@ -45,7 +45,7 @@ class Spinlock
         $total_wait_time = 0;
         $timeout = bcmul($this->lock_timeout, 1000, 0);
         while ($this->add($key) === false) {
-            if ($this->lock_timeout > 0 && $total_wait_time > $timeout) {
+            if ($this->lock_timeout >= 0 && $total_wait_time >= $timeout) {
                 throw new \Exception('Detected Spinlock timeout. pid:' . posix_getpid() . '; key:' . $key);
             }
             $wait_time = $this->wait();
