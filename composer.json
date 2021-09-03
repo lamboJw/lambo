@@ -1,13 +1,15 @@
 {
-    "require": {
-        "ext-swoole": ">=4.5",
-        "php": ">=7.4",
-        "ext-json": "*",
-        "ext-mbstring": "*",
-        "ext-redis": "*",
-        "ext-pdo": "*",
-        "xiaoler/blade": "^5.4",
-        "swoole/ide-helper": "^4.6",
-        "ext-posix": "*"
-    }
+  "require": {
+    "ext-swoole": ">=4.5",
+    "php": ">=7.4",
+    "ext-json": "*",
+    "ext-mbstring": "*",
+    "ext-redis": "*",
+    "ext-pdo": "*",
+    "xiaoler/blade": "^5.4",
+    "swoole/ide-helper": "^4.6",
+    "ext-posix": "*",
+    "ext-apcu": "*",
+    "ext-bcmath": "*"
+  }
 }
