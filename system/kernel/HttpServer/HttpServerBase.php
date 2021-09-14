@@ -5,13 +5,23 @@ namespace system\kernel\HttpServer;
 
 use Swoole\Coroutine\System;
 use system\kernel\Application;
+use system\kernel\Route;
 use system\kernel\Router;
 use system\kernel\WebsocketServer\WebsocketHandlerInterface;
 use Throwable;
+use Co\Http\Server as co_server;
+use Swoole\Websocket\Server as ws_server;
+use Swoole\Http\Server as swoole_server;
 
 abstract class HttpServerBase
 {
+    /**
+     * @var co_server|swoole_server|ws_server
+     */
     protected $server;
+    /**
+     * @var Route[]
+     */
     protected array $route_map;
     protected WebsocketHandlerInterface $ws_service;
 
@@ -65,7 +75,6 @@ abstract class HttpServerBase
         $this->http_config = array_replace_recursive($this->http_config, config('swoole.http', []));
         $this->server_config = array_replace_recursive($this->server_config, config('swoole.server', []));
         $this->websocket_config = array_replace_recursive($this->websocket_config, config('swoole.websocket', []));
-        $this->route_map = Router::load_routes();
         if (!empty($this->http_config['open_websocket'])) {
             $ws_service = $this->http_config['websocket_service'] ?? '';
             if (empty($ws_service)) {
@@ -87,7 +96,7 @@ abstract class HttpServerBase
     }
 
     //HTTP服务器处理请求函数
-    protected function http_server_callback(\Swoole\Http\Request $request, \Swoole\Http\Response $response, $route_map)
+    protected function http_server_callback(\Swoole\Http\Request $request, \Swoole\Http\Response $response)
     {
         //处理chrome请求favicon.ico
         if ($request->server['path_info'] == '/favicon.ico' || $request->server['request_uri'] == '/favicon.ico') {
@@ -98,24 +107,16 @@ abstract class HttpServerBase
             app()->set_request($request);
             app()->set_response($response);
             app()->set_session();
-            if (array_key_exists($request->server['request_uri'], $route_map)) {
-                $route = $route_map[$request->server['request_uri']];
-                foreach ($route['middleware'] as $middleware) {
-                    $mid_result = (new $middleware())->handle();
-                    if ($mid_result !== true) {
-                        response()->end($mid_result);
-                    }
-                }
+            if ($route = Router::matchRoute()) {
+                $route->runMiddleware();
                 if (config('app.std_output_to_page')) {
                     //输出标准输出到页面时的写法
                     response()->return(function () use ($route) {
-                        $class = new $route['class']();
-                        call_user_func([$class, $route['func']]);
+                        $route->run();
                     });
                 } else {
                     //标准输出到控制台的写法
-                    $class = new $route['class']();
-                    call_user_func([$class, $route['func']]);
+                    $route->run();
                     response()->end();
                 }
             } else {

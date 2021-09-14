@@ -12,9 +12,9 @@ class index
         view('index');
     }
 
-    public function test(){
-        $model = new example();
-        $re = $model->getInfo(1);
+    public function test(example $model, $id){
+        var_dump($id);
+        $re = $model->getInfo($id);
         response(var_export($re, true));
     }
 }

@@ -12,6 +12,7 @@ use Swoole\Table;
 use Swoole\WebSocket\Frame;
 use system\kernel\Application;
 use system\kernel\Redis;
+use system\kernel\Router;
 use system\kernel\WebsocketServer\CoWebsocketResponse;
 use Throwable;
 
@@ -47,12 +48,13 @@ class CoHttpServer extends HttpServerBase
      */
     protected function onRequest()
     {
+        Router::loadRoutes();
         $this->handle_static();
         $this->server->handle('/', function ($request, $response) {
             if ($this->max_request > 0) {
                 $this->check_request();
             }
-            $this->http_server_callback($request, $response, $this->route_map);
+            $this->http_server_callback($request, $response);
         });
     }
 

@@ -6,6 +6,7 @@ namespace system\kernel\HttpServer;
 use Swoole\Process;
 use Swoole\Websocket\Server as ws_server;
 use Swoole\Http\Server as http_server;
+use system\kernel\Router;
 use system\kernel\WebsocketServer\SwooleWebsocketResponse;
 
 class SwooleHttpServer extends HttpServerBase
@@ -28,13 +29,14 @@ class SwooleHttpServer extends HttpServerBase
     protected function onRequest()
     {
         $this->server->on('request', function ($request, $response) {
-            $this->http_server_callback($request, $response, $this->route_map);
+            $this->http_server_callback($request, $response);
         });
     }
 
     protected function onWorkerStart()
     {
         $this->server->on('WorkerStart', function ($server, $worker_id) {
+            Router::loadRoutes();
             $this->auto_reload();
         });
     }

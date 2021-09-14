@@ -3,10 +3,12 @@
 use system\kernel\Route;
 use system\kernel\Router;
 
-(new Router())->route('/','index','index');
-(new Router())->route('/test','index','test');
-(new Router())->route('/ws_client','wsclient','index');
-(new Router())->route('/file','file','index');
-(new Router())->group(['test'],[
-    (new Route('/test2','test','index2')),
-]);
+Router::get('/', 'index', 'index');
+Router::get('/test/{id}', 'index', 'test');
+Router::get('/ws_client', 'wsclient', 'index');
+Router::get('/file', 'file', 'index');
+Router::middleware(['test'])->prefix('admin')->group(function () {
+    Router::get('/test/{obj}', function ($obj) {
+        response('admin/test'.$obj);
+    });
+});

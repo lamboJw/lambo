@@ -1,7 +1,17 @@
 <?php
 
 namespace system\kernel;
-
+/**
+ * Class Router
+ * @package system\kernel
+ * @method static void get(string $path, $controller, string $func = null)
+ * @method static void post(string $path, $controller, string $func = null)
+ * @method static void put(string $path, $controller, string $func = null)
+ * @method static void delete(string $path, $controller, string $func = null)
+ * @method static void patch(string $path, $controller, string $func = null)
+ * @method static void any(string $path, $controller, string $func = null)
+ * @method static void match(array $method, string $path, $controller, string $func = null)
+ */
 class Router
 {
     // 所有路由
@@ -13,59 +23,152 @@ class Router
     // 当前使用的中间件数组
     private static array $cur_middleware = [];
 
+    // 当前使用的前缀
+    private static string $cur_prefix = '';
+
+    // 当前路由组使用的中间件数组
+    private static array $cur_group_middleware = [];
+
+    // 当前路由组使用的前缀
+    private static string $cur_group_prefix = '';
+
     /**
-     * 为路由设置中间件，与route()方法配合使用
+     * 为路由设置中间件
      * @param array $middleware
-     * @return $this
+     * @return Router
      */
-    public function middleware(array $middleware)
+    public static function middleware(array $middleware): Router
     {
         self::$cur_middleware = $middleware;
-        return $this;
+        return new self;
     }
 
     /**
-     * 定义路由
-     * @param string $path 路由地址
-     * @param string $controller 控制器名
-     * @param string $func 方法名
+     * 设置路由前缀
+     * @param string $prefix
+     * @return Router
      */
-    public function route(string $path, string $controller, string $func)
+    public static function prefix(string $prefix): Router
     {
-        $gen_route = (new Route($path, $controller, $func))->namespace(self::$cur_namespace)->middleware(self::$cur_middleware)->generate();
-        self::$route_map[$gen_route['pattern']] = $gen_route;
-        self::$cur_middleware = [];
+        self::$cur_prefix = $prefix;
+        return new self;
     }
 
     /**
      * 定义路由组
-     * @param array $middleware 中间件数组
-     * @param array $routes 路由数组
+     * @param array|callable $options 配置，如果没有配置，可以直接传回调函数
+     * @param callable $callback
      */
-    public function group(array $middleware, array $routes)
+    public static function group($options, $callback = null)
     {
-        self::$cur_middleware = $middleware;
-        foreach ($routes as $route) {
-            if (!$route instanceof Route) {
-                continue;
-            }
-            $gen_route = $route->namespace(self::$cur_namespace)->middleware($middleware)->generate();
-            self::$route_map[$gen_route['pattern']] = $gen_route;
+        if ($callback === null && is_callable($options)) {
+            $callback = $options;
+            $options = [];
         }
-        self::$cur_middleware = [];
+        if ($callback === null) {
+            return;
+        }
+        if (!empty($options['middleware'])) {
+            if (is_array($options['middleware'])) {
+                self::$cur_group_middleware = $options['middleware'];
+            } else {
+                self::$cur_group_middleware = [$options['middleware']];
+            }
+        }
+        if (!empty($options['prefix'])) {
+            self::$cur_group_prefix = $options['prefix'];
+        }
+        $callback();
+        self::$cur_group_middleware = [];
+        self::$cur_group_prefix = '';
+    }
+
+    public static function __callStatic($name, $arguments)
+    {
+        if (in_array($name, ['get', 'post', 'put', 'delete', 'patch', 'any', 'match'])) {
+            if ($name === 'match') {
+                $method = array_shift($arguments);
+            }
+            $path = $arguments[0];
+            if (is_callable($arguments[1]) && empty($arguments[2])) {
+                $callback = $arguments[1];
+                $controller = '';
+                $func = '';
+            } else {
+                $callback = null;
+                $controller = $arguments[1];
+                $func = $arguments[2];
+            }
+            $route = (new Route($path, $controller, $func));
+            if (in_array($name, ['get', 'post', 'put', 'delete', 'patch'])) {
+                $route->method($name);
+            } elseif ($name === 'match') {
+                $route->method($method);
+            }
+            if (is_callable($callback)) {
+                $route->callback($callback);
+            }
+            $prefix = self::$cur_group_prefix ?: (self::$cur_prefix ?: '');
+            $middleware = self::$cur_group_middleware ?: (self::$cur_middleware ?: []);
+            $route->namespace(self::$cur_namespace)->prefix($prefix)->middleware($middleware)->generate();
+            self::addRouteMap($route);
+            self::$cur_prefix = '';
+            self::$cur_middleware = [];
+        }
+    }
+
+    private static function addRouteMap(Route $route)
+    {
+        $pattern = $route->pattern;
+        $pattern = explode('/', ltrim($pattern, "/"));
+        $max_key = count($pattern) - 1;
+        $pid = null;
+        foreach ($pattern as $key => $item) {
+            self::$route_map[$key][] = ['pattern' => $item, 'route' => $key == $max_key ? $route : null, 'child' => null];
+            end(self::$route_map[$key]);
+            $cid = key(self::$route_map[$key]);
+            if ($pid !== null) {
+                self::$route_map[$key - 1][$pid]['child'] = $cid;
+            }
+            $pid = $cid;
+        }
     }
 
     /**
      * 根据路由文件加载路由
-     * @return array
+     * @return void
      */
-    public static function load_routes()
+    public static function loadRoutes()
     {
         $routes = get_dir_files(ROUTE_PATH);
         foreach ($routes as $route_file) {
             self::$cur_namespace = str_replace('.php', '', basename($route_file));
             require_once $route_file;
         }
-        return self::$route_map;
+    }
+
+    /**
+     * @return Route|bool
+     */
+    public static function matchRoute()
+    {
+        $request_uri = request()->server('request_uri');
+        $request_uri = explode('/', ltrim($request_uri, "/"));
+        $children[0] = array_keys(self::$route_map[0]);
+        $max_key = count($request_uri) - 1;
+        foreach ($request_uri as $key => $item) {
+            if (!isset($children[$key])) break;  //没有任何匹配项
+            foreach ($children[$key] as $child) {
+                $pattern = self::$route_map[$key][$child];
+                if ($pattern['pattern'] == $item || preg_match('/^\{(.*)}$/', $pattern['pattern'])) {     //有匹配到的匹配项
+                    if ($key == $max_key && !empty($pattern['route'])) {  //首个完全匹配，直接返回
+                        return $pattern['route'];
+                    } elseif ($key != $max_key && $pattern['child'] !== null) {     //未完全匹配，记录下一次的匹配项
+                        $children[$key + 1][] = $pattern['child'];
+                    }
+                }
+            }
+        }
+        return false;
     }
 }

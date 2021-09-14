@@ -54,7 +54,7 @@ $config = [
     // 服务器详细配置
     'server' => [
         // worker进程数量
-        'worker_num' => 2,
+        'worker_num' => 1,
 
         // reactor进程数量
         'reactor_num' => 4,

@@ -28,7 +28,7 @@ $config = [
      * 启动服务器的类型
      * 异步风格SWOOLE_HTTP_SERVER 或 协程风格CO_HTTP_SERVER
      */
-    'server_type' => SWOOLE_HTTP_SERVER,
+    'server_type' => CO_HTTP_SERVER,
 
     // 标准输出是否输出到页面
     'std_output_to_page' => false,
