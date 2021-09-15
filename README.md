@@ -288,38 +288,50 @@ $redis->get('key1');
 
 ### 定义路由
 路由文件存放在`app/routes`文件夹下。`default.php`文件下的路由，没有前置路径。除`default.php`文件外，其他文件内的路由，都会根据文件名作为前置路径，例：  
-`admin.php`文件下存在一个路由，地址为`test1`，服务器监听`localhost:80`，则实际访问地址为`http://localhost/admin/test1` 。  
-+ 定义单一路由  
-`route()`：  
-$path：路由地址  
-$controller：控制器名  
-$func：方法名  
+`admin.php`文件下存在一个路由，地址为`/test1`，服务器监听`localhost:80`，则实际访问地址为`http://localhost/admin/test1` 。  
+> 支持依赖注入，带参数的路由，按HTTP方法区分路由。  
 
-```
-$router = new Router();
-$router->route('/test','test','index');
-```
-
-+ 使用中间件  
-`middleware()`：  
+#### 使用中间件  
++ `Router::middleware(array $middleware)`：  
 $middleware： 该路由需要使用的中间件名称。中间件名称为`app/middleware.php`中的key。  
-> 注意：单独使用middleware()方法没有任何效果，必须和route()方法一起使用。
+> 注意：单独使用middleware()方法没有任何效果，必须和group()或各个单一路由方法一起使用。
 ```
-$router = new Router();
-$router->middleware(['test'])->route('/test','test','index');
+Router::middleware(['test'])->get($path, $controller, $func);
 ```
 
-+ 定义一组路由
-当多个路由都需要使用同一组中间件时，可以使用这个。  
-`group()`：  
-$middleware： 和`middleware()`方法接收参数一样。  
-$routes：多个路由类实例组成的数组。  
+#### 设置路由前缀  
++ `Router::prefix(string $prefix)`：  
+$prefix： 该路由或路由组的前缀。最终路径为：`域名/路由文件名/路由前缀/路由路径`。  
+> 注意：单独使用prefix()方法没有任何效果，必须和group()或各个单一路由方法一起使用。
+```
+Router::prefix('admin')->get($path, $controller, $func);
+```
+
+#### 定义单一路由  
+根据HTTP方法，分为了`get`、`post`、`put`、`delete`、`patch`、`any`、`match`这几个方法，`any`方法为匹配任何HTTP方法，如果请求时的HTTP方法不符合，则抛出异常。  
+除了`match`方法需要多传一个method参数，其他参数都一样：
+
++ `Router::get(string $path, $controller, string $func = null)`  
+$path：路由路径  
+$controller：控制器名称，控制器的查找路径为```controllers/路由文件名/该参数值```。也可以直接传匿名函数，直接执行该匿名函数，无需控制器。  
+$func：控制器函数名。当$controller传了匿名函数时，不能传该参数。
+
++ `Router::match(array $method, string $path, $controller, string $func = null)`   
+$method：当前路由允许的所有HTTP方法，如：```['get','post']```。所有元素都必须为小写。
+
+#### 定义一组路由
+ 当多个路由都需要使用同一组中间件或前缀时使用。  
++ `group($options, $callback = null)`：  
+$options： 统一配置，支持配置中间件和前缀。例：`['middleware'=>['test'],'prefix'=>'admin']`。也可以忽略配置，直接传回调函数。
+$callback：回调函数，包含多个单一路由。如果路由组和单一路由同时配置了中间件和前缀，则优先使用路由组的配置。
 
 ```
-$router = new Router();
-$router->group(['test'],[
-    (new Route('/test2','test','index2')),
-]);
+Router::group(['middleware'=>['test'],'prefix'=>'admin'], function () {
+    Router::get('/test/{obj}', function ($obj) {
+        response($obj);
+    });
+    Router::post('/test1', 'index', 'test1');
+});
 ```
 
 ### 渲染视图

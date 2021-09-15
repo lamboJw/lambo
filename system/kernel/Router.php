@@ -156,18 +156,27 @@ class Router
         $request_uri = explode('/', ltrim($request_uri, "/"));
         $children[0] = array_keys(self::$route_map[0]);
         $max_key = count($request_uri) - 1;
+        $spare_route = null;
+        $http_method = strtolower(request()->server('request_method'));
         foreach ($request_uri as $key => $item) {
             if (!isset($children[$key])) break;  //没有任何匹配项
             foreach ($children[$key] as $child) {
                 $pattern = self::$route_map[$key][$child];
                 if ($pattern['pattern'] == $item || preg_match('/^\{(.*)}$/', $pattern['pattern'])) {     //有匹配到的匹配项
-                    if ($key == $max_key && !empty($pattern['route'])) {  //首个完全匹配，直接返回
-                        return $pattern['route'];
+                    if ($key == $max_key && !empty($pattern['route'])) {  //路由地址完全匹配
+                        if (empty($pattern['route']->method) || in_array($http_method, $pattern['route']->method)) {    //该路由的http方法允许当前请求，则直接返回
+                            return $pattern['route'];
+                        } else {        //http方法不允许，作为备用
+                            $spare_route = $pattern['route'];
+                        }
                     } elseif ($key != $max_key && $pattern['child'] !== null) {     //未完全匹配，记录下一次的匹配项
                         $children[$key + 1][] = $pattern['child'];
                     }
                 }
             }
+        }
+        if (!empty($spare_route)) {
+            return $spare_route;
         }
         return false;
     }
