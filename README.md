@@ -322,7 +322,7 @@ $method：当前路由允许的所有HTTP方法，如：```['get','post']```。�
 #### 定义一组路由
  当多个路由都需要使用同一组中间件或前缀时使用。  
 + `group($options, $callback = null)`：  
-$options： 统一配置，支持配置中间件和前缀。例：`['middleware'=>['test'],'prefix'=>'admin']`。也可以忽略配置，直接传回调函数。
+$options： 统一配置，支持配置中间件和前缀。例：`['middleware'=>['test'],'prefix'=>'admin']`。也可以忽略配置，直接传回调函数。  
 $callback：回调函数，包含多个单一路由。如果路由组和单一路由同时配置了中间件和前缀，则优先使用路由组的配置。
 
 ```
