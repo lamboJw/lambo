@@ -284,7 +284,7 @@ $redis->get('key1');
 ```
  
 ### 中间件
-编写的中间件需要放在`app/middleware`文件夹下，实现`Middleware`抽象类。路由中定义的中间件，会自动执行handle方法。当执行通过时，请返回`true`。不通过时，返回的内容会直接发送到浏览器，且结束当前请求。
+编写的中间件需要放在`app/middleware`文件夹下，实现`system\kernel\HttpServer\Middleware`抽象类。路由中定义的中间件，会自动执行`handle()`方法。当执行通过时，请返回`true`。不通过时，返回的内容会直接发送到浏览器，且结束当前请求。需要在`config/middleware.php`中注册才能使用。
 
 ### 定义路由
 路由文件存放在`app/routes`文件夹下。`default.php`文件下的路由，没有前置路径。除`default.php`文件外，其他文件内的路由，都会根据文件名作为前置路径，例：  

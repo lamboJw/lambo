@@ -2,7 +2,7 @@
 
 namespace app\middleware;
 
-use \system\kernel\Middleware;
+use system\kernel\HttpServer\Middleware;
 
 class test extends Middleware
 {
