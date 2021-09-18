@@ -31,7 +31,7 @@ class DependencyInjection
         $func_params = $ref_method->getParameters();
         foreach ($func_params as $key => $func_param) {
             $param_class = $func_param->getClass();
-            if ($param_class->name == $class && $function == '__construct') { //死循环
+            if ($param_class && $param_class->name == $class && $function == '__construct') { //死循环
                 throw new DependencyInjectionException("构造函数依赖注入不能注入类本身，class:{$class}，function:{$function}, param_index:{$key}");
             }
             $instance = self::getInjectInstance($param_class, $other_params);
