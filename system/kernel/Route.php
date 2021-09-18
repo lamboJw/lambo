@@ -109,7 +109,7 @@ class Route
     {
         if (!$this->generated) return;
         if (!empty($this->method) && !in_array(strtolower(request()->server('request_method')), $this->method)) {
-            throw new \Exception('不支持该HTTP方法');
+            throw new RouteException('不支持该HTTP方法');
         }
         if (is_callable($this->callback)) {
             $this->runCallback();
@@ -133,7 +133,7 @@ class Route
     private function runController()
     {
         if (!method_exists($instance = app()->singleton($this->class, $this->class), $this->function)) {
-            throw new \Exception('当前类不存在该方法');
+            throw new RouteException('当前类不存在该方法');
         }
         call_user_func_array([$instance, $this->function], DependencyInjection::getParams($this->class, $this->function, $this->getRouteParams()));
     }
@@ -155,4 +155,9 @@ class Route
         }
         return $params;
     }
+}
+
+class RouteException extends \Exception
+{
+
 }

@@ -40,13 +40,13 @@ class Spinlock
     public function lock($key)
     {
         if (isset($this->locks[$key])) {
-            throw new \Exception('Detected Spinlock deadlock.');
+            throw new SpinlockException('Detected Spinlock deadlock.');
         }
         $total_wait_time = 0;
         $timeout = bcmul($this->lock_timeout, 1000, 0);
         while ($this->add($key) === false) {
             if ($this->lock_timeout >= 0 && $total_wait_time >= $timeout) {
-                throw new \Exception('Detected Spinlock timeout. pid:' . posix_getpid() . '; key:' . $key);
+                throw new SpinlockException('Detected Spinlock timeout. pid:' . posix_getpid() . '; key:' . $key);
             }
             $wait_time = $this->wait();
             $total_wait_time = bcadd($total_wait_time, $wait_time, 0);
@@ -62,4 +62,9 @@ class Spinlock
         unset($this->locks[$key]);
         return true;
     }
+}
+
+class SpinlockException extends \Exception
+{
+
 }
