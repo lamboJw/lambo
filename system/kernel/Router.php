@@ -103,6 +103,10 @@ class Router
             if (in_array($name, ['get', 'post', 'put', 'delete', 'patch'])) {
                 $route->method($name);
             } elseif ($name === 'match') {
+                foreach ($method as &$item) {
+                    $item = strtolower($item);
+                }
+                unset($item);
                 $route->method($method);
             }
             if (is_callable($callback)) {

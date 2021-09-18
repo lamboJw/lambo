@@ -4,6 +4,7 @@ namespace system\kernel;
 
 use Swoole\Coroutine;
 use system\helpers\CoroutineSingleton;
+use system\helpers\DependencyInjection;
 use system\kernel\HttpServer\Request;
 use system\kernel\HttpServer\Response;
 use system\kernel\Session\SessionManager;
@@ -92,11 +93,13 @@ class Application
      * @param string $class 类名
      * @param mixed ...$params 构造函数参数
      * @return mixed
+     * @throws \ReflectionException
      */
     public function singleton(string $key, string $class = '', ...$params)
     {
         if (!isset($this->context['singleton_class'][$key])) {
-            $this->context['singleton_class'][$key] = new $class(...$params);
+            $construct_params = DependencyInjection::getParams($class, '__construct', $params);
+            $this->context['singleton_class'][$key] = new $class(...$construct_params);
         }
         return $this->context['singleton_class'][$key];
     }

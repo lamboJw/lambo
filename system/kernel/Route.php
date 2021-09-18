@@ -4,6 +4,8 @@
 namespace system\kernel;
 
 
+use system\helpers\DependencyInjection;
+
 class Route
 {
     /**
@@ -31,14 +33,14 @@ class Route
 
     public function namespace(string $namespace)
     {
-        if($this->generated) return $this;
+        if ($this->generated) return $this;
         $this->namespace = $namespace;
         return $this;
     }
 
     public function method($method)
     {
-        if($this->generated) return $this;
+        if ($this->generated) return $this;
         if (!empty($method)) {
             if (is_array($method)) {
                 $this->method = $method;
@@ -51,14 +53,14 @@ class Route
 
     public function prefix(string $prefix)
     {
-        if($this->generated) return $this;
+        if ($this->generated) return $this;
         $this->prefix = $prefix;
         return $this;
     }
 
     public function middleware(array $middleware)
     {
-        if($this->generated) return $this;
+        if ($this->generated) return $this;
         foreach ($middleware as $item) {
             $md_class = config("middleware.{$item}", null);
             if ($md_class === null) {
@@ -71,15 +73,15 @@ class Route
 
     public function callback(callable $callback)
     {
-        if($this->generated) return $this;
+        if ($this->generated) return $this;
         $this->callback = $callback;
         return $this;
     }
 
     public function generate()
     {
-        if($this->generated) return $this;
-        $this->class = '\\app\\controllers' . ((empty($this->namespace) || $this->namespace == 'default') ? '' : "\\{$this->namespace}") . '\\' . $this->controller;
+        if ($this->generated) return $this;
+        $this->class = 'app\\controllers' . ((empty($this->namespace) || $this->namespace == 'default') ? '' : "\\{$this->namespace}") . "\\{$this->controller}";
         $prefix = ((empty($this->namespace) || $this->namespace == 'default') ? '' : "/{$this->namespace}") . ($this->prefix ? "/{$this->prefix}" : '');
         $this->pattern = $prefix . $this->path;
         $this->generated = true;
@@ -87,7 +89,7 @@ class Route
 
     public function runMiddleware()
     {
-        if(!$this->generated) return;
+        if (!$this->generated) return;
         foreach ($this->middleware as $middleware) {
             if (!method_exists($mid_obj = new $middleware(), 'handle')) {
                 continue;
@@ -105,26 +107,23 @@ class Route
      */
     public function run()
     {
-        if(!$this->generated) return;
-        $method = request()->server('request_method');
-        if (!empty($this->method) && !in_array(strtolower($method), $this->method)) {
+        if (!$this->generated) return;
+        if (!empty($this->method) && !in_array(strtolower(request()->server('request_method')), $this->method)) {
             throw new \Exception('不支持该HTTP方法');
         }
         if (is_callable($this->callback)) {
-            self::runCallback();
+            $this->runCallback();
         } else {
-            self::runController();
+            $this->runController();
         }
     }
 
     /**
      * 执行路由的回调函数
-     * @throws \ReflectionException
      */
     private function runCallback()
     {
-        $params = self::getInjectParams();
-        call_user_func_array($this->callback, $params);
+        call_user_func_array($this->callback, DependencyInjection::getParams($this->callback, null, $this->getRouteParams()));
     }
 
     /**
@@ -136,15 +135,14 @@ class Route
         if (!method_exists($instance = app()->singleton($this->class, $this->class), $this->function)) {
             throw new \Exception('当前类不存在该方法');
         }
-        $params = self::getInjectParams();
-        call_user_func_array([$instance, $this->function], $params);
+        call_user_func_array([$instance, $this->function], DependencyInjection::getParams($this->class, $this->function, $this->getRouteParams()));
     }
 
     /**
      * 获取路由路径中指定的参数
      * @return array
      */
-    private function getRouteParams()
+    private function getRouteParams(): array
     {
         $params = [];
         $request_uri = request()->server('request_uri');
@@ -153,49 +151,6 @@ class Route
         foreach ($pattern as $key => $item) {
             if (preg_match('/^\{(.*)}$/', $item, $match) && $request_uri[$key] !== '') {
                 $params[$match[1]] = $request_uri[$key];
-            }
-        }
-        return $params;
-    }
-
-    /**
-     * 获取依赖注入后的参数数组
-     * @return array
-     * @throws \ReflectionException
-     */
-    private function getInjectParams()
-    {
-        $params = self::getRouteParams();
-        if (is_callable($this->callback)) {
-            $ref_method = new \ReflectionFunction($this->callback);
-        } else {
-            $ref_method = new \ReflectionMethod($this->class, $this->function);
-        }
-        $func_params = $ref_method->getParameters();
-        foreach ($func_params as $key => $func_param) {
-            $class = $func_param->getClass();
-            if ($class && !array_key_exists($func_param->name, $params)) {
-                $instance = app()->singleton($class->name, $class->name);
-                $params[$func_param->name] = $instance;
-            }
-        }
-        return self::sortParams($func_params, $params);
-    }
-
-    /**
-     * 根据控制器方法的参数顺序获取参数列表
-     * @param array $func_params 控制器方法的参数
-     * @param array $origin_params 所有已获取的参数
-     * @return array
-     */
-    private function sortParams(array $func_params, array $origin_params)
-    {
-        $params = [];
-        foreach ($func_params as $key => $func_param) {
-            if (array_key_exists($func_param->name, $origin_params)) {
-                $params[$key] = $origin_params[$func_param->name];
-            } else {
-                $params[$key] = null;
             }
         }
         return $params;

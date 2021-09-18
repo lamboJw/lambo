@@ -318,7 +318,12 @@ $func：控制器函数名。当$controller传了匿名函数时，不能传该�
 
 + `Router::match(array $method, string $path, $controller, string $func = null)`   
 $method：当前路由允许的所有HTTP方法，如：```['get','post']```。所有元素都必须为小写。
-
++ 使用匿名函数
+```php
+Router::get('/test', function () {
+    response('test callback');
+});
+```
 #### 定义一组路由
  当多个路由都需要使用同一组中间件或前缀时使用。  
 + `group($options, $callback = null)`：  
@@ -333,6 +338,26 @@ Router::group(['middleware'=>['test'],'prefix'=>'admin'], function () {
     Router::post('/test1', 'index', 'test1');
 });
 ```
+
+#### 定义带参数的路由
+在URI中直接传值，可以使用带参数的路由。  
+```php
+Router::get('/index/{str}', 'index', 'index');
+```
+也可以定义多个参数  
+```php
+Router::get('/index/{str}/{str2}/test', 'index', 'test');
+```
+
+#### 使用依赖注入
+直接在控制器方法或回调函数中传入指定类的参数，即可自动获取该类的实例，无需手动实例化。  
+```php
+Router::get('/test/{id}', function (app\models\example $model, $id) {
+    $re = $model->getInfo($id);
+    response(var_export($re, true));
+});
+```
+
 
 ### 渲染视图
 框架使用了blade模版引擎，来自 [xiaoLer/blade](https://github.com/XiaoLer/blade) 。blade模版引擎使用方法请查看 [laravel文档](https://learnku.com/docs/laravel/8.x/blade/9377) 。  

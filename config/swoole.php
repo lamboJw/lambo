@@ -65,7 +65,7 @@ $config = [
 
         // 最大允许连接数，默认 ulimit -n
         // 当实际连接数高时，适当调高ulimit -n，同时修改该选项
-        'max_connection' => 10000,
+        'max_connection' => 1000,
 
         // 是否开启压缩
         'http_compression' => true,

@@ -130,7 +130,7 @@ abstract class HttpServerBase
                     app()->ob_get_clean();
                 }
             } else {
-                debug('ERROR', '捕获错误：' . swoole_last_error() . '， 错误信息：' . $e->getMessage());
+                debug('ERROR', '捕获错误：' . swoole_last_error() . '， 错误信息：' . $e->getMessage() . "\n " . var_export($e->getTrace(), true));
                 $response->status(500);
                 if (config('app.debug')) {
                     $response->header('Content-Type', 'application/json');
