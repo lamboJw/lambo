@@ -4,7 +4,9 @@
 namespace system\helpers;
 
 
+use Exception;
 use ReflectionClass;
+use ReflectionException;
 use ReflectionFunction;
 use ReflectionMethod;
 
@@ -12,11 +14,11 @@ class DependencyInjection
 {
     /**
      * 根据类方法或匿名函数，获取依赖注入后的参数列表
-     * @param $class
-     * @param null $function
-     * @param array $other_params
+     * @param callable|string $class 要注入的类/匿名函数
+     * @param string|null $function 要注入的类函数，当$class传了匿名函数时，传null
+     * @param array $other_params 其他非注入参数
      * @return array
-     * @throws \ReflectionException
+     * @throws ReflectionException|DependencyInjectionException
      */
     public static function getParams($class, $function = null, array $other_params = []): array
     {
@@ -30,7 +32,7 @@ class DependencyInjection
         foreach ($func_params as $key => $func_param) {
             $param_class = $func_param->getClass();
             if ($param_class->name == $class && $function == '__construct') { //死循环
-                throw new \Exception("构造函数依赖注入不能注入类本身，class:{$class}，function:{$function}, param_index:{$key}");
+                throw new DependencyInjectionException("构造函数依赖注入不能注入类本身，class:{$class}，function:{$function}, param_index:{$key}");
             }
             $instance = self::getInjectInstance($param_class, $other_params);
             if (!is_null($instance)) {
@@ -60,6 +62,7 @@ class DependencyInjection
      * @param ReflectionClass|null $class
      * @param array $params
      * @return mixed
+     * @throws ReflectionException
      */
     private static function getInjectInstance($class, array $params)
     {
@@ -67,4 +70,9 @@ class DependencyInjection
             return app()->singleton($class->name, $class->name);
         }
     }
+}
+
+class DependencyInjectionException extends Exception
+{
+
 }
