@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace system\kernel;
+namespace system\kernel\Database;
 /**
  * 部分redis命令，方便ide自动提示
  * @package system\kernel

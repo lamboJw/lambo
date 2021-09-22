@@ -18,7 +18,7 @@ if (config('app.enable_redis_pool')) {
     CO\run(function () {
         $redis_config_key = config('app.redis_config_key', 'default');
         $redis_config = config("redis.{$redis_config_key}");
-        new \system\kernel\Redis($redis_config);
+        new \system\kernel\Database\Redis($redis_config);
     });
 }
 

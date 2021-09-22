@@ -11,8 +11,7 @@ use Swoole\Process;
 use Swoole\Table;
 use Swoole\WebSocket\Frame;
 use system\kernel\Application;
-use system\kernel\Redis;
-use system\kernel\Router;
+use system\kernel\Database\Redis;
 use system\kernel\WebsocketServer\CoWebsocketResponse;
 use Throwable;
 
@@ -48,7 +47,6 @@ class CoHttpServer extends HttpServerBase
      */
     protected function onRequest()
     {
-        Router::loadRoutes();
         $this->handle_static();
         $this->server->handle('/', function ($request, $response) {
             if ($this->max_request > 0) {

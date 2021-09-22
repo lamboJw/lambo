@@ -4,7 +4,7 @@
 namespace app\models;
 
 
-use system\kernel\Model;
+use system\kernel\Database\Model;
 
 class example extends Model
 {

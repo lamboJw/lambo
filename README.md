@@ -175,7 +175,7 @@ debug('INFO', 'debug信息');
 $view：视图名称。  
 $data： 传到视图的数据。
 ```php
-view('index');
+view('index', ['data'=>$data]);
 ```
 
 ### Application类
@@ -334,7 +334,7 @@ response()->header('Content-Type', 'application/json');
 
 ### 数据库Model
 移植[Simps](https://simps.io)框架的BaseModel模块，基于PDO连接MySQL，可以使用连接池，增加短连接模式，增加了一些功能。使用Medoo框架，基本的使用方法，请查看[Medoo文档](https://medoo.lvtao.net/1.2/doc.php) 。  
-+ 创建model时，需要继承`\system\kernel\Model`类：`class example_model extends Model`  
++ 创建model时，需要继承`\system\kernel\Database\Model`类：`class example_model extends Model`  
 + 根据情况，覆盖`$db`、`$tableName`、`$keyName`。  
   `$db`：数据库配置，`config/database.php`配置中其中一个key。  
   `$tableName`：表名。  
@@ -443,7 +443,7 @@ $params = (new example())->load();
 #### 使用方法
 实例化类之后，可以使用Redis扩展中的所有方法。  
  ```
-$redis = new system\kernel\Redis();
+$redis = new system\kernel\Database\Redis();
 $redis->get('key1');
 ```
  
@@ -451,6 +451,7 @@ $redis->get('key1');
 编写的中间件需要放在`app/middleware`文件夹下，实现`system\kernel\HttpServer\Middleware`抽象类。路由中定义的中间件，会自动执行`handle()`方法。当执行通过时，请返回`true`。不通过时，返回的内容会直接发送到浏览器，且结束当前请求。需要在`config/middleware.php`中注册才能使用。
 
 ### 定义路由
+使用`system\kernel\Routing\Router`类，定义路由。  
 路由文件存放在`app/routes`文件夹下。`default.php`文件下的路由，没有前置路径。除`default.php`文件外，其他文件内的路由，都会根据文件名作为前置路径，例：  
 `admin.php`文件下存在一个路由，地址为`/test1`，服务器监听`localhost:80`，则实际访问地址为`http://localhost/admin/test1` 。  
 > 支持依赖注入，带参数的路由，按HTTP方法区分路由。  
@@ -532,10 +533,10 @@ Router::get('/test/{id}', function (app\models\example $model, $id) {
 #### 使用
 视图文件放在`app/views`文件夹下。在控制器中，使用view()方法直接渲染。  
 + `view()`  
-  $view：视图文件路径  
+  $view：视图文件路径，根目录为`app/views`。  
   $data：传递到视图的变量  
 ```php
-view('test', ['a'=>'Hello World']);
+view('index', ['a'=>'Hello World']);
 ```
 
 ### HTTP服务器
@@ -554,7 +555,8 @@ view('test', ['a'=>'Hello World']);
 使用异步风格服务器，`swoole.server`所有配置项都能使用，默认使用SWOOLE_BASE模式。  
 
 #### 代码热更新
-每5秒会扫描app路径下，除了helpers和libraries文件夹下文件外的所有文件，如有文件更新过，则会平滑重启当前Worker进程。  
+每5秒会扫描app路径下，除了helpers和libraries文件夹外的所有文件，如有文件更新过，则会平滑重启当前Worker进程。
+> 注意：异步风格服务器BASE模式下，worker_num=1时，不能自动热更新  
 
 ### Websocket服务器
 跟随HTTP服务器一同启动，与HTTP服务器使用同一端口，使用`ws://host:port/websocket`连接。  

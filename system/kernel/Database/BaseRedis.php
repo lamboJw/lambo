@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace system\kernel;
+namespace system\kernel\Database;
 
 use RuntimeException;
 use Swoole\Database\RedisConfig;

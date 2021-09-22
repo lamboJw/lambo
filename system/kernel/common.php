@@ -300,20 +300,20 @@ if (!function_exists('cookie')) {
 if (!function_exists('log_message')) {
     function log_message($level, $message)
     {
-        \system\kernel\Log::getInstance()->write_log($level, $message);
+        \system\helpers\Log::getInstance()->write_log($level, $message);
     }
 }
 
 if (!function_exists('debug')) {
     function debug($level, $message)
     {
-        \system\kernel\Debug::getInstance()->debug($level, $message);
+        \system\helpers\Debug::getInstance()->debug($level, $message);
     }
 }
 
 if (!function_exists('view')) {
     function view($view, $data = [])
     {
-        response(\system\kernel\View::getInstance()->make($view, $data)->render());
+        response(\system\kernel\HttpServer\View::getInstance()->make($view, $data)->render());
     }
 }

@@ -2,12 +2,10 @@
 
 namespace system\kernel;
 
-use Swoole\Coroutine;
 use system\helpers\CoroutineSingleton;
 use system\helpers\DependencyInjection;
 use system\kernel\HttpServer\Request;
 use system\kernel\HttpServer\Response;
-use system\kernel\Session\SessionManager;
 use system\kernel\Session\SessionStore;
 use system\kernel\WebsocketServer\CoWebsocketResponse;
 use system\kernel\WebsocketServer\SwooleWebsocketResponse;

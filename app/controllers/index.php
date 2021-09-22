@@ -5,7 +5,7 @@ namespace app\controllers;
 
 
 use app\models\example;
-use system\kernel\Model;
+use system\kernel\Database\Model;
 
 class index
 {

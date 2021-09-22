@@ -1,7 +1,6 @@
 <?php
 
-use system\kernel\Route;
-use system\kernel\Router;
+use system\kernel\Routing\Router;
 
 Router::get('/', 'index', 'index');
 Router::get('/test/{id}', 'index', 'test');

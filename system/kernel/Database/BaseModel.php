@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace system\kernel;
+namespace system\kernel\Database;
 
 use Exception;
 use InvalidArgumentException;
@@ -28,7 +28,7 @@ class Raw
 
 class BaseModel
 {
-    protected \system\kernel\PDO $pool;
+    protected \system\kernel\Database\PDO $pool;
 
     /** @var PDO */
     protected $pdo;
@@ -50,9 +50,9 @@ class BaseModel
     public function __construct($db, $config = null)
     {
         if (!empty($config)) {
-            $this->pool = \system\kernel\PDO::getInstance($db, $config);
+            $this->pool = \system\kernel\Database\PDO::getInstance($db, $config);
         } else {
-            $this->pool = \system\kernel\PDO::getInstance($db);
+            $this->pool = \system\kernel\Database\PDO::getInstance($db);
         }
     }
 

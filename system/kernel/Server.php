@@ -10,6 +10,7 @@ use Swoole\Process;
 use Swoole\Table;
 use system\kernel\HttpServer\CoHttpServer;
 use system\kernel\HttpServer\SwooleHttpServer;
+use system\kernel\Routing\Router;
 
 class Server
 {
@@ -18,6 +19,7 @@ class Server
      */
     public function run_http_server()
     {
+        Router::loadRoutes();
         switch (config('app.server_type')) {
             case CO_HTTP_SERVER:
             {

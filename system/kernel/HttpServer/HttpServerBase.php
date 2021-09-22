@@ -5,8 +5,8 @@ namespace system\kernel\HttpServer;
 
 use Swoole\Coroutine\System;
 use system\kernel\Application;
-use system\kernel\Route;
-use system\kernel\Router;
+use system\kernel\Routing\Route;
+use system\kernel\Routing\Router;
 use system\kernel\WebsocketServer\WebsocketHandlerInterface;
 use Throwable;
 use Co\Http\Server as co_server;
@@ -19,10 +19,6 @@ abstract class HttpServerBase
      * @var co_server|swoole_server|ws_server
      */
     protected $server;
-    /**
-     * @var Route[]
-     */
-    protected array $route_map;
     protected WebsocketHandlerInterface $ws_service;
 
     protected array $http_config = [

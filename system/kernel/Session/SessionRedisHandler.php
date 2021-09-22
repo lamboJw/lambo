@@ -4,7 +4,7 @@
 namespace system\kernel\Session;
 
 
-use system\kernel\Redis;
+use system\kernel\Database\Redis;
 
 class SessionRedisHandler implements \SessionHandlerInterface, SessionPrepareInterface
 {

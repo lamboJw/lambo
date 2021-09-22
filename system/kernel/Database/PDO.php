@@ -5,7 +5,7 @@ declare(strict_types=1);
  * 根据配置，生成连接池或PDO实例
  */
 
-namespace system\kernel;
+namespace system\kernel\Database;
 
 use RuntimeException;
 use Swoole\Database\PDOConfig;

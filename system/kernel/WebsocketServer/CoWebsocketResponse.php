@@ -8,7 +8,7 @@ use Swoole\Http\Response;
 use Swoole\Table;
 use Swoole\WebSocket\CloseFrame;
 use Swoole\WebSocket\Frame;
-use system\kernel\Redis;
+use system\kernel\Database\Redis;
 use system\kernel\HttpServer\CoHttpServer;
 
 class CoWebsocketResponse extends WebsocketResponseBase
