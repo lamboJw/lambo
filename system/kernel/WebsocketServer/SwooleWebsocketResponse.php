@@ -3,13 +3,17 @@
 
 namespace system\kernel\WebsocketServer;
 
+use Swoole\WebSocket\Frame;
 use Swoole\WebSocket\Server;
 
 class SwooleWebsocketResponse extends WebsocketResponseBase
 {
+    /**
+     * @var Frame|bool|string
+     */
     public $frame;
 
-    public $fd;
+    public string $fd;
 
     private Server $server;
 

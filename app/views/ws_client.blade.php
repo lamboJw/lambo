@@ -10,14 +10,14 @@
 <input id="i" type="text" value="" placeholder="输入发送的文字">
 <script>
     let timer;
-    let wsUrl = "ws://192.168.130.235:10086/websocket";
+    let wsUrl = "ws://192.168.137.2:10086/websocket";
     //这里加上服务端的配置
     let websocket = new WebSocket(wsUrl);
     //实例对象的onopen树形
     websocket.onopen = function (evt) {
         console.log("content_swoole_success");
     }
-    //实例话 onmessage
+    //实例化 onmessage
     websocket.onmessage = function (evt) {
         console.log('on message');
         console.log(evt);

@@ -156,12 +156,11 @@ class Router
      */
     public static function matchRoute()
     {
-        $request_uri = request()->server('request_uri');
-        $request_uri = explode('/', ltrim($request_uri, "/"));
+        $request_uri = explode('/', ltrim(server('request_uri'), "/"));
         $children[0] = array_keys(self::$route_map[0]);
         $max_key = count($request_uri) - 1;
         $spare_route = null;
-        $http_method = strtolower(request()->server('request_method'));
+        $http_method = strtolower(server('request_method'));
         foreach ($request_uri as $key => $item) {
             if (!isset($children[$key])) break;  //没有任何匹配项
             foreach ($children[$key] as $child) {

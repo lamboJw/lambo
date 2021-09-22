@@ -1,5 +1,5 @@
 # lambo
-这是一个基于swoole开发的简易MVC框架，参考了CI框架、laravel框架和simps框架进行开发。支持异步风格和协程风格两种HTTP服务器、MySQL和Redis连接池。  
+这是一个基于swoole开发的简易MVC框架，参考了CI框架、laravel框架和simps框架进行开发。支持异步风格和协程风格两种HTTP服务器、websocket服务器，MySQL和Redis连接池。  
 ## 运行环境
 1. PHP > 7.4
 2. Composer
@@ -70,140 +70,267 @@ composer install
 + `config($name, $default = null)`  
 获取某一配置文件的内容。  
 $name：配置项路径，例如：`app.php`文件下的`server_type`配置，使用`app.server_type`。   
-$default：如果$item配置不存在时，返回的默认值。
+$default：如果$item配置不存在时，返回的默认值。  
+```php
+config('session.start_session');
+```
 
 + `library($name)` 和 `helper($name)`
 获取对应类的实例，分别对应libraries文件夹和helper文件夹下的类。  
 $name：类名。
+```php
+$lib = library('example');
+```
 
 + `app()`  
-返回Application实例，协程隔离。
+返回Application实例，协程隔离。详情请查看`Application类`
 
 + `request(...$keys)`  
 若不传参数，则返回Request实例。  
 若传参数，则根据参数获取get和post中对应的值。
+```php
+$data = request('data');
+$id = request()->get('id', 'title');
+```
 
 + `response($data = '')`  
 Http响应。  
 若不传参数，则返回Response实例。  
 若传参数，则把data作为内容发送到浏览器。
+```php
+response()->redirect('https://www.baidu.com');
+response('finish');
+```
 
 + `ws_response()`  
 返回WebsocketResponse实例。  
+```php
+ws_response()->push($fd, 'test');
+```
 
 + `server($key = '')`  
 获取请求中的server信息，类似原生PHP的$_SERVER。
+```php
+$uri = server('request_uri');
+```
 
 + `api_json($code = 1, $msg = 'success', $data = [])`  
 返回一个用于响应api的json。
+```php
+$json = api_json(1,'success',['data'=>$data]);
+```
 
 + `api_response($code = 1, $msg = 'success', $data = [])`  
 区别于`api_json()`方法，该方法会直接将json发送到浏览器。
+```php
+api_response(1,'success',['data'=>$data]);
+```
+
++ `session($key, $value = null)`  
+获取session内容或设置session内容。如果没有开启session，则该方法无效。  
+$key：session的key值。  
+$value：要设置session的值，当该参数为null时，认为是获取内容。  
+```php
+$uid = session('uid');
+session('uid', 1);
+```
+
++ `get_session_id()`  
+获取session_id，当用户禁用了cookie时，可以使用该方法把session_id传给前端处理。  
+
++ `cookie($key, $value = null, $expires = null, $path = null, $domain = null, $secure = null, $httponly = null, $samesite = null, $priority = null)`  
+获取或设置cookie。  
+$name：名称。  
+$value：内容，当该参数为null时，认为是获取cookie。  
+$expires：过期时间时间戳。  
+$path：cookie可用的路径。  
+$domain：cookie可用的域。  
+$secure：是否只允许用https传输，true/false。  
+$httponly：是否只允许通过http协议，设置为true时，不允许脚本语言访问，能有效防止XSS攻击。  
+$samesite：限制第三方Cookie发送，Strict：仅允许发送同站点请求的cookie；Lax：除a标签、GET表单、预加载请求外，都禁止；None：不禁止，不过需要设置$secure=true。  
+$priority：优先级，chrome的提案，定义了三种优先级，Low/Medium/High，当cookie数量超出时，低优先级的cookie会被优先清除。  
+```php
+cookie('token');
+cookie('token', 'abcd');
+```
 
 + `log_message($level, $message)`  
 移植并改良自CI框架Log类，记录日志。  
 $level：日志等级。可以为'ERROR'、'DEBUG'、'NOTICE'、'INFO'、'ALL'，也可以自定义。如果为预设的几个，则受到`config/app.php`中的`log_level`限制，否则不会限制。  
 $message：需要记录的信息。如果传值类型为非string，会做var_export处理。
+```php
+log_message('ERROR', '错误信息');
+```
 
 + `debug($level, $message)`  
 打印debug消息到控制台，并写入日志。受`config/app.php`中的`debug`和`debug_level`限制。  
 $level：debug等级。  
 $message：需要打印的信息。
+```php
+debug('INFO', 'debug信息');
+```
 
 + `view($view, $data=[])`  
 渲染视图，使用blade模版引擎。  
 $view：视图名称。  
 $data： 传到视图的数据。
+```php
+view('index');
+```
 
 ### Application类
 主要用于传出协程隔离的全局变量、单例类实例、Request实例、Response实例、WebsocketResponse实例。  
 #### 主要方法
 + `singleton(string $key, string $class = '', ...$params)`  
-返回单例类实例，如果未定义，会使用$params传值进行实例化。  
+返回单例类实例，如果未定义，会使用$params传值进行实例化，支持依赖注入。  
 $key：类的别名。  
 $class：类。  
 $params：构造函数参数。 
+```php
+app()->singleton('example', app\models\example::class);
+```
 
 + `set($key, $value = '')`  
 设置全局变量，可以只设置一个值，也可以一次设置多个。  
 $key：只设置一个值时，传入变量名，当想设置多个值，传入key=>value数组。  
 $value：只设置一个值时，传入变量的值，当想设置多个值，不需传值。  
+```php
+app()->set('arg1', 'str1');
+```
 
 + `get($key)`  
 获取全局变量。  
 $key：当类型为string时，返回单个变量，当类型为array时，返回数组中的所有变量。
+```php
+$var = app()->get('arg1'); 
+```
 
 ### Request类
 对`Swoole\Http\Request`进行封装。
 #### 主要方法
 + `request(...$keys)`  
-获取一个或多个get和post中指定值  
+获取一个或多个get和post中指定值。  
+```php
+request()->request('id');
+```
 
 + `get(...$keys)`  
 获取一个或多个get中指定值。  
+```php
+$id = request()->get('id');
+```
 
 + `post(...$keys)`  
 获取一个或多个post中指定值。  
+```php
+$text = request()->post('text');
+```
 
 + `files()`  
 获取所有客户端提交的文件。  
+```php
+$files = request()->file();
+```
 
 + `tmpfiles()`  
 获取所有临时文件。
+```php
+$temp_files = request()->tmpfiles();
+```
 
 + `all()`  
 获取所有客户端传值，包含get、post、files、tmpfiles。
+```php
+$all_params = request()->all();
+```
 
 + `cookie($key = '')`  
 获取cookie。  
-$key为空时，返回所有cookie的值。
+$key为空时，返回所有cookie的值。  
+```php
+$token = request()->cookie('token');
+```
 
 + `server($key = '')`  
 获取server信息，类似原生PHP的$_SERVER。  
 $key为空时，返回所有server的值。
+```php
+$uri = request()->server('request_uri');
+```
 
 + `header($key = '')`  
 获取header信息  
 $key为空时，返回所有header的值。
+```php
+$host = request()->header('host');
+```
 
 ### Response类
 对`Swoole\Http\Response`中的HTTP响应方法进行封装。
 #### 主要方法
 + `json($data)`  
 将$data进行json_encode后发送到浏览器。
+```php
+response()->json(['id'=>1]);
+```
 
 + `end($content = '')`  
 将内容发送到浏览器并结束本次响应。慎用，一般响应只需要使用`write()`方法。  
 如果开启了标准输出到页面，使用该方法后，标准输出的内容会抛弃。  
 > 注意：使用该方法后，会直接结束请求。
+```php
+response()->end('响应结束');
+```
 
 + `status($statusCode)`  
 设置响应状态码。
+```php
+response()->status(400);
+```
 
 + `sendfile($filename, $offset = null, $length = null)`  
 发送文件到客户端。
 $filename：文件名。  
 $offset：偏移量，不传默认从头开始。  
 $length：长度，不传默认到文件末尾。  
+```php
+response()->sendfile('/static/common/images/favicon.ico');
+```
 
 + `redirect($location, $http_code = null)`  
 重定向页面。
 $location：重定向地址。  
 $http_code：重定向状态码。  
 > 注意：使用该方法后，会直接结束请求。
+```php
+response()->redirect('https://www.baidu.com');
+```
 
 + `write($content)`  
 将内容发送到浏览器。  
+```php
+response()->write('响应内容1');
+response()->write('响应内容2');
+```
 
 + `cookie($name, $value = null, $expires = null, $path = null, $domain = null, $secure = null, $httponly = null, $samesite = null, $priority = null)`  
 设置 HTTP 响应的 cookie 信息，会对 $value 进行`urlencode`处理。  
+```php
+response()->cookie('token', '1234');
+```
 
 + `rawCookie($name, $value = null, $expires = null, $path = null, $domain = null, $secure = null, $httponly = null, $samesite = null, $priority = null)`  
 与`cookie()`方法参数一样，但不会对 $value 进行`urlencode`处理。
+```php
+response()->cookie('token', '1234');
+```
 
 + `header($key, $value, $format = null)`  
 设置 HTTP 响应的 Header 信息。  
 $format：是否需要对 Key 进行 HTTP 约定格式化【默认 true 会自动格式化】  
+```php
+response()->header('Content-Type', 'application/json');
+```
 
 ### 数据库Model
 移植[Simps](https://simps.io)框架的BaseModel模块，基于PDO连接MySQL，可以使用连接池，增加短连接模式，增加了一些功能。使用Medoo框架，基本的使用方法，请查看[Medoo文档](https://medoo.lvtao.net/1.2/doc.php) 。  
@@ -224,6 +351,10 @@ $format：是否需要对 Key 进行 HTTP 约定格式化【默认 true 会自�
   $where：查询条件，如果类型不为array，则当作是主键查询。    
   $columns：查询字段。  
   $join：连表操作。  
+```php
+$info = (new example())->getInfo(1);
+$info = (new example())->getInfo(['id'=>1], 'title,desc');
+```
     
 + `getList($where, $columns = "*", $join = null, &$count = false)`  
   获取多条数据。  
@@ -231,48 +362,81 @@ $format：是否需要对 Key 进行 HTTP 约定格式化【默认 true 会自�
   $columns：查询字段。  
   $join：连表查询。  
   $count：本条查询无limit时的总条数，不传默认不获取，可用于分页计数。  
+```php
+$count = 0;
+$list = (new example())->getList(['status'=>1, 'limit'=>1], '*', null, $count);
+```
   
 + `getListWithPage(array $where, int $page, array $option = [])`  
   获取带有分页信息的列表。  
   $where：查询条件。  
   $page：页数，从1开始。  
-  $option：分页选项。pagesize：每页数量，默认20；page_name：页码的参数名；columns：查询字段；join：连表查询。  
+  $option：分页选项。\[pagesize：每页数量，默认20；page_name：页码的参数名；columns：查询字段；join：连表查询。]  
+  
   返回值：  
   list：查询结果。  
   count：总行数。  
   page：当前页数。  
   pagesize：每页数量。  
   page_name：页数的参数名。  
+```php
+$result = (new example())->getListWithPage(['status'=>1], 1, ['pagesize'=>10]);
+$count = $result['count'];
+$list = $result['list'];
+```
  
 + `add($data)`  
   插入数据，可插入单条或多条，返回最后插入ID。  
   $data：插入数据。  
+```php
+(new example())->add(['name'=>'test1']);
+```
   
 + `edit($data, $where)`  
   更新数据，返回影响行数。  
   $data：更新字段。  
   $where：更新条件。  
+```php
+(new example())->edit(['name'=>'test1'], ['id'=>1]);
+```
  
 + `del($where)`  
   删除数据，返回影响行数。  
-  $where：删除条件。  
+  $where：删除条件。可以直接传主键值。  
+```php
+(new example())->del(['id'=>1]);
+(new example())->del(1);
+```
   
 + `columns()`  
   获取当前表的所有字段。
+```php
+$columns = (new example())->columns();
+```
   
 + `load()`  
   根据表字段自动获取数据。  
   可以覆盖Model类的`$able_columns`变量，决定只获取某些字段。  
   可以覆盖Model类的`$deny_columns`变量，决定不获取某些字段。  
-
+```php
+$params = (new example())->load();
+```
 + `save($data)`  
   根据主键是否为空判断插入或更新。  
   $data：要更新或插入的数据。  
+```php
+(new example())->save($params);
+```
   
 + `updateOrInsert($where, $data)`  
   更新或插入数据，先根据条件查询结果，如存在结果，对比传入的数据，如果完全一致，则不会执行更新。  
-  $where：查询条件。  
+  $where：查询条件。可以直接传主键值。  
   $data：要更新或插入的数据。
+```php
+(new example())->updateOrInsert(0, ['name'=>'test']);   //主键值没有等于0的，插入
+(new example())->updateOrInsert(1, ['name'=>'test2']);  //主键值有等于1的，更新
+(new example())->updateOrInsert(['name'=>'test'], ['name'=>'test2']);
+```
   
 ### Redis  
 移植[Simps](https://simps.io)框架的BaseRedis模块，可以使用连接池，增加短连接模式。在连接池模式下，在类销毁时，会自动将库切换回`config/redis.php`配置文件的默认库。原代码为每执行一次命令，都做一次连接池池get和push，现在改为构造函数连接池get，析构函数执行连接池push。
@@ -368,9 +532,11 @@ Router::get('/test/{id}', function (app\models\example $model, $id) {
 #### 使用
 视图文件放在`app/views`文件夹下。在控制器中，使用view()方法直接渲染。  
 + `view()`  
-$view：视图文件路径  
-$data：传递到视图的变量  
-`view('test', ['a'=>'Hello World']);`
+  $view：视图文件路径  
+  $data：传递到视图的变量  
+```php
+view('test', ['a'=>'Hello World']);
+```
 
 ### HTTP服务器
 使用`app.server_type`来控制启动的HTTP服务器类型。
@@ -410,31 +576,57 @@ $data：传递到视图的变量
 + `swoole.websocket.websocket_compression`：启用数据压缩，配合push方法或broadcast方法中的flag参数使用。**协程风格暂不支持该配置。**  
 #### websocket响应类
 + `public $fd`：websocket连接的fd。
-+ `public $frame`：客户端发送到服务器的帧，类型为`Swoole\WebSocket\Frame`。
++ `public $frame`：客户端发送到服务器的帧，类型为`Swoole\WebSocket\Frame`。  
+  获取客户端发送的数据：
+```php
+$data = ws_response()->frame->data;
+```
 + `push($fd, $data, int $opcode = WEBSOCKET_OPCODE_TEXT, int $flag = SWOOLE_WEBSOCKET_FLAG_FIN): bool`  
   推送数据到指定客户端。  
-  $fd：websocket连接的fd。  
+  $fd：websocket连接的fd。如果是用协程风格的服务器，当fd不是当前连接的fd，又没有开启广播，则推送无效。  
   $data：发送的数据。当类型为`Swoole\WebSocket\Frame`时，忽略后面的两个参数。  
   $opcode：指定发送数据内容的格式，默认为文本类型，发送二进制数据，使用`WEBSOCKET_OPCODE_BINARY`。  
   $flag：是否已完成，是否压缩帧。0：未完成；`SWOOLE_WEBSOCKET_FLAG_FIN`：已完成；`SWOOLE_WEBSOCKET_FLAG_COMPRESS`：压缩帧。需要压缩时，使用`SWOOLE_WEBSOCKET_FLAG_FIN | SWOOLE_WEBSOCKET_FLAG_COMPRESS`。
+```php
+ws_response()->push($fd, '123');
+```
   
 + `exists($fd): bool`
   判断连接是否存在。
   $fd：websocket连接的fd。  
+```php
+if(ws_response()->exists($fd)){
+    echo 'true';
+}
+```
 
 + `disconnect($fd, int $code = SWOOLE_WEBSOCKET_CLOSE_NORMAL, string $reason = ''): bool`
-  断开指定客户端的连接。  
+  断开指定客户端的连接。如果是用协程风格的服务器，当fd不是当前连接的fd，且没有开启广播，则无效。  
   $fd：websocket连接的fd。  
   $code：关闭连接的状态码。  
   $reason：关闭连接的原因。  
+```php
+ws_response()->disconnect($fd);
+```
 
 + `isEstablished($fd): bool`
   检查连接是否为有效的WebSocket客户端连接。  
   $fd：websocket连接的fd。  
+```php
+if(ws_response()->isEstablished($fd)){
+    echo 'true';
+}
+```
   
 + `broadcast($data, int $opcode = WEBSOCKET_OPCODE_TEXT, int $flag = SWOOLE_WEBSOCKET_FLAG_FIN)`  
-  广播信息到所有除自己外的在线客户端。  
+  广播信息到所有除自己外的在线客户端。如果是用协程风格的服务器，且没有开启广播，则无效。  
   参数除$fd外，与`push()`方法对应。  
+```php
+ws_response()->broadcast('text123');
+```
   
 + `connection_count(): int;`
   返回当前连接的客户端数量。  
+```php
+$count = ws_response()->connection_count();
+```

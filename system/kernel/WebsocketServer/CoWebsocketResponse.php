@@ -3,23 +3,25 @@
 
 namespace system\kernel\WebsocketServer;
 
-use Swoole\Coroutine\Http\Server;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 use Swoole\Table;
 use Swoole\WebSocket\CloseFrame;
+use Swoole\WebSocket\Frame;
 use system\kernel\Redis;
 use system\kernel\HttpServer\CoHttpServer;
 
 class CoWebsocketResponse extends WebsocketResponseBase
 {
+    /**
+     * @var Frame|bool|string
+     */
     public $frame;
     private Response $ws;
     private Request $request;
     private Table $connections;
-    private Server $server;
-    public $fd;   //客户端唯一标识key
-    private bool $use_broadcast = false;
+    public string $fd;   //客户端唯一标识key
+    private bool $use_broadcast;
 
     public function __construct(Request $request, Response $ws, Table $connections)
     {

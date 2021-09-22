@@ -4,11 +4,16 @@
 namespace system\kernel\WebsocketServer;
 
 
+use Swoole\WebSocket\Frame;
+
 abstract class WebsocketResponseBase
 {
+    /**
+     * @var Frame|bool|string
+     */
     public $frame;
 
-    public $fd;
+    public string $fd;
 
     abstract function push($fd, $data, int $opcode = WEBSOCKET_OPCODE_TEXT, int $flag = SWOOLE_WEBSOCKET_FLAG_FIN): bool;
 

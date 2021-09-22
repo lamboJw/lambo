@@ -4,6 +4,7 @@
 namespace system\kernel;
 
 
+use Exception;
 use system\helpers\DependencyInjection;
 
 class Route
@@ -103,12 +104,12 @@ class Route
 
     /**
      * 执行路由
-     * @throws \ReflectionException
+     * @throws Exception
      */
     public function run()
     {
         if (!$this->generated) return;
-        if (!empty($this->method) && !in_array(strtolower(request()->server('request_method')), $this->method)) {
+        if (!empty($this->method) && !in_array(strtolower(server('request_method')), $this->method)) {
             throw new RouteException('不支持该HTTP方法');
         }
         if (is_callable($this->callback)) {
@@ -128,7 +129,7 @@ class Route
 
     /**
      * 执行路由绑定的控制器方法
-     * @throws \Exception
+     * @throws Exception
      */
     private function runController()
     {
@@ -145,19 +146,19 @@ class Route
     private function getRouteParams(): array
     {
         $params = [];
-        $request_uri = request()->server('request_uri');
+        $request_uri = server('request_uri');
         $pattern = explode('/', $this->pattern);
         $request_uri = explode('/', $request_uri);
         foreach ($pattern as $key => $item) {
             if (preg_match('/^\{(.*)}$/', $item, $match) && $request_uri[$key] !== '') {
-                $params[$match[1]] = $request_uri[$key];
+                $params[] = $request_uri[$key];
             }
         }
         return $params;
     }
 }
 
-class RouteException extends \Exception
+class RouteException extends Exception
 {
 
 }

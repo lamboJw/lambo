@@ -126,9 +126,9 @@ class BaseModel
         $this->statement = null;
 
         if ($this->debug_mode) {
-            echo $this->generate($query, $map);
+            echo $this->generate($query, $map). "\n";
 
-            $this->debug_mode = false;
+//            $this->debug_mode = false;
 
             $this->release($this->pdo);
 

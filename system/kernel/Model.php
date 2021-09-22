@@ -65,6 +65,7 @@ class Model extends BaseModel
             return false;
         }
         $where = $this->primary_key_where($where);
+        $where = $this->upper_key($where);
         if (empty($join)) {
             $join = $columns;
             $columns = $where;
@@ -85,19 +86,18 @@ class Model extends BaseModel
     {
         if (empty($where)) return false;
         if ($columns == ['*']) $columns = '*';
+        $where = $this->upper_key($where);
         if ($count !== false) {
             $count_where = $where;
-            foreach ($count_where as $k => $v) {
-                if (strtoupper($k) == 'LIMIT') {
-                    unset($count_where[$k]);
-                }
-            }
+            $count_columns = '*';
+            $count_join = $join;
+            unset($count_where['LIMIT']);
             if (empty($join)) {
-                $join = $columns;
-                $columns = $where;
-                $where = null;
+                $count_join = $count_columns;
+                $count_columns = $count_where;
+                $count_where = null;
             }
-            $count = $this->count($this->tableName, $join, $columns, $where);
+            $count = $this->count($this->tableName, $count_join, $count_columns, $count_where);
         }
         if (empty($join)) {
             $join = $columns;
@@ -125,11 +125,7 @@ class Model extends BaseModel
         $opt = array_merge($opt, $option);
         $count = 0;
         $offset = ($page - 1) * $opt['pagesize'];
-        foreach ($where as $k => $v) {
-            if (strtoupper($k) == 'LIMIT') {
-                unset($where[$k]);
-            }
-        }
+        $where = $this->upper_key($where);
         $where['LIMIT'] = [$offset, $opt['pagesize']];
         $list = $this->getList($where, $opt['columns'], $opt['join'], $count);
         return [
@@ -210,6 +206,7 @@ class Model extends BaseModel
         if ($this->timestamp) {
             $data[$this->edit_time_col] = $this->get_time();
         }
+        $where = $this->upper_key($where);
         $re = $this->update($this->tableName, $data, $where);
         if (!empty($this->error()) && $this->error()[0] !== '00000') {
             throw new RuntimeException(implode(',', $this->error()));
@@ -229,6 +226,7 @@ class Model extends BaseModel
             return false;
         }
         $where = $this->primary_key_where($where);
+        $where = $this->upper_key($where);
         $re = $this->delete($this->tableName, $where);
         return $re->rowCount();
     }
@@ -318,6 +316,20 @@ class Model extends BaseModel
     protected function primary_key_where($where){
         if(!is_array($where)){
             $where = [$this->keyName => $where];
+        }
+        return $where;
+    }
+
+    protected function upper_key($where){
+        if(!is_array($where)){
+            return $where;
+        }
+        foreach ($where as $key => $item) {
+            $upper_key = strtoupper($key);
+            if(in_array($upper_key, ['GROUP', 'ORDER', 'HAVING', 'LIMIT', 'LIKE', 'MATCH']) && $key != $upper_key){
+                $where[$upper_key] = $item;
+                unset($where[$key]);
+            }
         }
         return $where;
     }
