@@ -56,6 +56,7 @@ if (!function_exists('get_dir_files')) {
     function get_dir_files($path, $ext = 'php')
     {
         $file_list = [];
+        $ext = strtolower($ext);
         $path = rtrim($path, '/') . '/';
         $arr = scandir($path);      //扫描目录下所有文件和文件夹
         foreach ($arr as $item) {

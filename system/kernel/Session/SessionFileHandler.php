@@ -13,7 +13,7 @@ class SessionFileHandler implements \SessionHandlerInterface, SessionPrepareInte
 
     public function __construct()
     {
-        $this->path = (string)config('session.file_path', 'storage/session');
+        $this->path = (string)config('session.file_path', SESSION_FILE_PATH);
         dir_exists($this->path);
     }
 

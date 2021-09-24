@@ -17,7 +17,12 @@ define('SYS_KERNEL_PATH', SYSTEM_PATH . '/kernel');
 // 静态文件路径
 define('STATIC_NAME', 'static');
 define('STATIC_PATH', ROOT_PATH . '/' . STATIC_NAME);
-define('VIEW_CACHE_PATH', STATIC_PATH . '/view_cache');
+
+// 本地存储
+define('STORAGE_NAME', 'storage');
+define('STORAGE_PATH', ROOT_PATH . '/' . STORAGE_NAME);
+define('VIEW_CACHE_PATH', STORAGE_PATH . '/view_cache');
+define('SESSION_FILE_PATH', STORAGE_PATH . '/session');
 
 // debug、log等级
 define('LEVEL_NONE', 0);

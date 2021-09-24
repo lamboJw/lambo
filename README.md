@@ -84,10 +84,26 @@ composer install
 + time_out：连接超时时间
 + size：连接池大小，仅当启用连接池时才有效
 
+#### session.php Session配置
++ start_session：是否开启session
++ session_id_name：保存session_id的cookie名称
++ samesite：保存session_id的cookie的samesite属性
++ max_life_time：session有效时间（秒）
++ driver：保存session信息的驱动，file，redis，database
++ encrypt_key：生成session_id的加密key
++ table：database驱动时，存放数据的表名；redis驱动时，key的前缀
++ database_config：database驱动时，数据表使用的数据库
++ file_path：file驱动时，session文件存放路径
+
 #### 自定义配置
 必须使用变量名为$config的数组。
 
 ### 全局方法
++ `get_dir_files($path, $ext = 'php')`  
+获取目录下的所有指定扩展名的文件路径。  
+$path：目录的绝对路径。  
+$ext：要获取的文件扩展名，传空字符串时获取所有扩展名文件，包括无扩展名文件。
+
 + `&config_all()`  
 获取所有配置文件信息，以文件名为key。修改元素会直接改变已加载配置的值，谨慎修改。
 

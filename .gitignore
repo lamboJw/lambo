@@ -1,5 +1,5 @@
 vendor
 .idea
 static/logs
-static/view_cache
+storage/view_cache
 composer.lock

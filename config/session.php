@@ -23,4 +23,7 @@ $config = [
 
     //database驱动时，数据表使用的数据库
     'database_config' => 'default',
+
+    //文件驱动时，session文件存放路径
+    'file_path' => SESSION_FILE_PATH,
 ];
