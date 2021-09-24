@@ -63,8 +63,8 @@ if (!function_exists('get_dir_files')) {
                 continue;
             }
             $file_path = $path . $item;       //当前操作目录
-            if (is_dir($path . $item)) {    //如果是文件夹，继续扫描内容
-                get_dir_files($file_path);
+            if (is_dir($file_path)) {    //如果是文件夹，继续扫描内容
+                $file_list[$item] = get_dir_files($file_path, $ext);
             } else {                                //是文件
                 $file_info = pathinfo($file_path);  //获取扩展名
                 if (!isset($file_info['extension'])) {
@@ -72,7 +72,7 @@ if (!function_exists('get_dir_files')) {
                 }
                 $extension = strtolower($file_info['extension']);
                 if (empty($ext) || $extension == $ext) {
-                    $file_list[$file_info['filename']] = $file_path;
+                    $file_list[] = $file_path;
                 }
             }
         }
@@ -104,10 +104,12 @@ if (!function_exists('config_all')) {
 
         if (empty($_config)) {
             $files = get_dir_files(CONFIG_PATH);
-            foreach ($files as $file_name => $file_path) {
+            foreach ($files as $file_path) {
+                if (is_array($file_path)) continue;
                 $config = [];
                 require_once $file_path;
-                $_config[$file_name] = $config;
+                $file_info = pathinfo($file_path);
+                $_config[$file_info['filename']] = $config;
             }
         }
         return $_config;
@@ -315,5 +317,12 @@ if (!function_exists('view')) {
     function view($view, $data = [])
     {
         response(\system\kernel\HttpServer\View::getInstance()->make($view, $data)->render());
+    }
+}
+
+if (!function_exists('ftp')) {
+    function ftp(): \system\kernel\Ftp
+    {
+        return app()->singleton('ftp', \system\kernel\Ftp::class);
     }
 }

@@ -146,6 +146,7 @@ class Router
     {
         $routes = get_dir_files(ROUTE_PATH);
         foreach ($routes as $route_file) {
+            if(is_array($route_file)) continue;
             self::$cur_namespace = str_replace('.php', '', basename($route_file));
             require_once $route_file;
         }

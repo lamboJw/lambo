@@ -130,7 +130,7 @@ abstract class HttpServerBase
                 $response->status(500);
                 if (config('app.debug')) {
                     $response->header('Content-Type', 'application/json');
-                    $response->end(json_encode(['msg' => $e->getMessage(), 'trace' => $e->getTrace()]));
+                    $response->end(json_encode(['exception' => get_class($e), 'msg' => $e->getMessage(), 'trace' => $e->getTrace()]));
                 } else {
                     $response->end('<h1>500 服务器错误</h1>');
                 }

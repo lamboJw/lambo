@@ -35,9 +35,6 @@ class Application
 
     public function set_request($request)
     {
-        if (isset($this->context['singleton_classes']['request'])) {
-            return false;
-        }
         $this->singleton('request', Request::class, $request);
     }
 
@@ -48,9 +45,6 @@ class Application
 
     public function set_response($response)
     {
-        if (isset($this->context['singleton_classes']['response'])) {
-            return false;
-        }
         $this->singleton('response', Response::class, $response);
     }
 
@@ -61,9 +55,6 @@ class Application
 
     public function set_websocket_response(string $class, ...$params)
     {
-        if (isset($this->context['singleton_classes']['websocket_response'])) {
-            return false;
-        }
         if (!in_array($class, [CoWebsocketResponse::class, SwooleWebsocketResponse::class])) {
             return false;
         }
@@ -77,6 +68,7 @@ class Application
 
     public function set_session()
     {
+        if(isset($this->context['singleton_class']['session'])) return;
         $this->context['singleton_class']['session'] = session_service()->start_session();
     }
 
@@ -153,7 +145,7 @@ class Application
     public function ob_clean_all()
     {
         if ($this->ob_count > 0) {
-            log_message('NOTICE', "有未闭合缓冲区{$this->ob_count}个");
+            debug('NOTICE', "有未闭合缓冲区{$this->ob_count}个");
             for ($i = $this->ob_count; $i > 0; $i--) {
                 $this->ob_count--;
                 config('app.debug') ? ob_end_flush() : ob_end_clean();

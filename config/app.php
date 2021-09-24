@@ -41,4 +41,10 @@ $config = [
 
     // 开启mysql连接池
     'enable_mysql_pool' => false,
+
+    // ftp服务器配置
+    'ftp_config_key' => 'default',
+
+    // 上传ftp时，以下扩展名判断为纯文字文件
+    'ftp_text_extension' => ['txt', 'js', 'css', 'html', 'htm', 'php', 'log', 'xml'],
 ];

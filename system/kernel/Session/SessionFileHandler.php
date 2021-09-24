@@ -44,6 +44,7 @@ class SessionFileHandler implements \SessionHandlerInterface, SessionPrepareInte
         $file_list = get_dir_files($this->path, '');
         $del_time = time() - $maxlifetime;
         foreach ($file_list as $file) {
+            if(is_array($file)) continue;
             $ctime = filectime($file);
             if ($ctime <= $del_time) {
                 @unlink($file);

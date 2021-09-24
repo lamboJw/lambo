@@ -10,6 +10,7 @@
     "swoole/ide-helper": "^4.6",
     "ext-posix": "*",
     "ext-apcu": "*",
-    "ext-bcmath": "*"
+    "ext-bcmath": "*",
+    "ext-ftp": "*"
   }
 }

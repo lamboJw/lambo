@@ -9,6 +9,7 @@
 3. mbstring
 4. Swoole >= 4.5
 5. posix
+6. ftp
 ## 安装
 ```
 git clone https://github.com/lamboJw/lambo.git
@@ -30,8 +31,9 @@ composer install
 2. 日志路径、等级等。
 3. 开启http服务器的模式（协程风格 或 异步风格）。
 4. 标准输出是否输出到页面。
-5. 连接池开关，redis配置选择。
+5. mysql、redis连接池开关，redis配置选择。
 6. 是否自动加载vendor。  
+7. ftp配置选择，判断为纯文本文件的扩展名。
 
 #### swoole.php 关于swoole的设置
 1. http：http服务器基本配置，ip、端口等，及websocket服务器基本配置。
@@ -46,11 +48,27 @@ composer install
 
 #### database.php MySQL数据库配置
 1. MySQL连接基于PDO扩展。
-2. size为连接池容量，仅当启用连接池时才有效。
-3. 可以添加多个配置，当启用连接池时，会一次生成所有配置的连接池。
+2. 可以添加多个配置，当启用连接池时，会一次生成所有配置的连接池。
+4. 每个配置包含：
++ host：服务器ip
++ port：端口号
++ username：用户名
++ password：密码
++ database：数据库
++ charset：字符编码
++ unixSocket：使用unix socket通信时，unix socket路径
++ options: 连接数据库的其他选项
++ size：连接池大小，仅当启用连接池时才有效
 
 #### ftp.php FTP服务器配置
-（待开发）
+1. 可以填写多个配置，但只能启用一个，在`app.php`中的`ftp_config_key`修改启用配置。
+2. 每个配置包含：
++ host：服务器ip
++ port：端口号
++ username：用户名
++ password：密码
++ debug：是否开启debug信息
++ passive：是否开启被动模式
 
 #### middleware.php 中间件注册
 1. 只有在该配置文件中注册了的中间件才能使用。
@@ -58,7 +76,13 @@ composer install
 
 #### redis.php Redis配置
 1. 可以填写多个配置，但只能启用一个，在`app.php`中的`redis_config_key`修改启用配置。
-2. size为连接池容量，仅当启用连接池时才有效。
+2. 每个配置包含：
++ host：服务器ip
++ port：端口号
++ auth：验证密码
++ db_index：默认库
++ time_out：连接超时时间
++ size：连接池大小，仅当启用连接池时才有效
 
 #### 自定义配置
 必须使用变量名为$config的数组。
@@ -176,6 +200,12 @@ $view：视图名称。
 $data： 传到视图的数据。
 ```php
 view('index', ['data'=>$data]);
+```
+
++ `ftp()`  
+获取Ftp类实例，进行ftp相关操作。
+```php
+ftp()->upload(STATIC_PATH.'/uploads/images/img.jpg', '/ftp/images/img.jpg');
 ```
 
 ### Application类
@@ -336,15 +366,15 @@ response()->header('Content-Type', 'application/json');
 移植[Simps](https://simps.io)框架的BaseModel模块，基于PDO连接MySQL，可以使用连接池，增加短连接模式，增加了一些功能。使用Medoo框架，基本的使用方法，请查看[Medoo文档](https://medoo.lvtao.net/1.2/doc.php) 。  
 + 创建model时，需要继承`\system\kernel\Database\Model`类：`class example_model extends Model`  
 + 根据情况，覆盖`$db`、`$tableName`、`$keyName`。  
-  `$db`：数据库配置，`config/database.php`配置中其中一个key。  
-  `$tableName`：表名。  
-  `$keyName`：主键名。  
+  $db：数据库配置，`config/database.php`配置中其中一个key。  
+  $tableName：表名。  
+  $keyName：主键名。  
   
 + 插入、更新时自动修改时间功能。  
-  `$timestamp`：是否开启自动更新时间功能。  
-  `$add_time_col`：创建时间的列名。  
-  `$edit_time_col`：更新时间的列名。  
-  `$time_type`： 更新时间的类型。`MODEL_DATETIME`日期时间，`MODEL_DATE`日期，`MODEL_UNIX_TIMESTAMP`时间戳。  
+  $timestamp：是否开启自动更新时间功能。  
+  $add_time_col：创建时间的列名。  
+  $edit_time_col：更新时间的列名。  
+  $time_type： 更新时间的类型。`MODEL_DATETIME`日期时间，`MODEL_DATE`日期，`MODEL_UNIX_TIMESTAMP`时间戳。  
 #### 额外方法
 + `getInfo($where, $columns = "*", $join = null)`  
   获取单条数据。  
@@ -446,6 +476,95 @@ $params = (new example())->load();
 $redis = new system\kernel\Database\Redis();
 $redis->get('key1');
 ```
+
+### FTP
+连接FTP服务器，进行上传、下载等各种操作。
+#### 使用方法
++ 使用`ftp()`全局方法获取FTP实例，即可调用各种操作。所有方法都会返回一个bool值，操作成功时返回true，操作失败返回false。如有必要，请捕获FtpException。
++ `upload($local_path, $remote_path, $mode = 'auto')`  
+  上传文件到ftp服务器  
+  $local_path：本地文件绝对路径  
+  $remote_path：远程文件绝对路径  
+  $mode：传输模式，auto：自动识别，text：纯文本，binary：二进制流  
+```php
+ftp()->upload(STATIC_PATH.'/uploads/images/img.jpg', '/ftp/images/img.jpg');
+```
+  
++ `download($remote_path, $local_path, $mode = 'auto')`  
+  从ftp服务器下载文件到本地  
+  $remote_path：远程文件绝对路径  
+  $local_path：本地文件绝对路径  
+  $mode：传输模式，auto：自动识别，text：纯文本，binary：二进制流
+```php
+ftp()->download('/ftp/images/img.jpg', STATIC_PATH.'/uploads/images/img.jpg');
+```
+
++ `rename($old_name, $new_name)`  
+  重命名/移动文件，若移动文件，需确保目录已存在  
+  $old_name：原文件路径  
+  $new_name：新文件路径  
+```php
+ftp()->rename('/ftp/images/img.jpg', '/ftp/images/img2.jpg');   //重命名
+ftp()->rename('/ftp/images/img.jpg', '/ftp/images/2021/img.jpg');   //移动
+```
+  
++ `delete_file($remote_path)`  
+  删除文件  
+  $remote_path：远程文件路径
+```php
+ftp()->delete_file('/ftp/images/img.jpg');
+```
+  
++ `create_remote_path($remote_path, $permission = '744')`  
+  创建远程目录，父目录必须有ftp登录用户的权限，否则创建失败  
+  $remote_path：远程目录绝对路径    
+  $permission：目录权限，默认744  
+```php
+ftp()->create_remote_path('/ftp/images/2021/09/24');
+```
+
++ `clone_dir($local_path, $remote_path)`  
+  将本地目录的内容克隆到远程目录，包括子目录。若远程目录不存在，会试图创建。  
+  $local_path：本地目录绝对路径    
+  $remote_path：远程目录绝对路径    
+```php
+ftp()->clone_dir(STATIC_PATH.'/uploads/images', '/ftp/images');
+```
+
++ `chdir($path)`  
+  切换当前目录  
+  $path：要切换的目录  
+```php
+ftp()->chdir('/ftp/images/2021/09/24');
+```
+
++ `mkdir($dir)`  
+  创建目录  
+  $dir：目录名称  
+```php
+ftp()->mkdir('/ftp/images/2021/09/24');
+```
+  
++ `rmdir($dir)`  
+  删除目录  
+  $dir：目录名称  
+```php
+ftp()->rmdir('/ftp/images/2021/09/24');
+```
+  
++ `chmod($mode, $filename)`  
+  修改目录/文件权限  
+  $mode：权限  
+  $filename：目录/文件路径  
+```php
+ftp()->chmod('744', '/ftp/images/2021/09/24');
+```
+
++ `cdup()`  
+  切换到父目录  
+```php
+ftp()->cdup();
+```
  
 ### 中间件
 编写的中间件需要放在`app/middleware`文件夹下，实现`system\kernel\HttpServer\Middleware`抽象类。路由中定义的中间件，会自动执行`handle()`方法。当执行通过时，请返回`true`。不通过时，返回的内容会直接发送到浏览器，且结束当前请求。需要在`config/middleware.php`中注册才能使用。
@@ -458,7 +577,7 @@ $redis->get('key1');
 
 #### 使用中间件  
 + `Router::middleware(array $middleware)`：  
-$middleware： 该路由需要使用的中间件名称。中间件名称为`app/middleware.php`中的key。  
+  $middleware： 该路由需要使用的中间件名称。中间件名称为`app/middleware.php`中的key。
 > 注意：单独使用middleware()方法没有任何效果，必须和group()或各个单一路由方法一起使用。
 ```
 Router::middleware(['test'])->get($path, $controller, $func);
@@ -466,7 +585,7 @@ Router::middleware(['test'])->get($path, $controller, $func);
 
 #### 设置路由前缀  
 + `Router::prefix(string $prefix)`：  
-$prefix： 该路由或路由组的前缀。最终路径为：`域名/路由文件名/路由前缀/路由路径`。  
+  $prefix： 该路由或路由组的前缀。最终路径为：`域名/路由文件名/路由前缀/路由路径`。  
 > 注意：单独使用prefix()方法没有任何效果，必须和group()或各个单一路由方法一起使用。
 ```
 Router::prefix('admin')->get($path, $controller, $func);
@@ -477,12 +596,12 @@ Router::prefix('admin')->get($path, $controller, $func);
 除了`match`方法需要多传一个method参数，其他参数都一样：
 
 + `Router::get(string $path, $controller, string $func = null)`  
-$path：路由路径  
-$controller：控制器名称，控制器的查找路径为```controllers/路由文件名/该参数值```。也可以直接传匿名函数，直接执行该匿名函数，无需控制器。  
-$func：控制器函数名。当$controller传了匿名函数时，不能传该参数。
+  $path：路由路径  
+  $controller：控制器名称，控制器的查找路径为```controllers/路由文件名/该参数值```。也可以直接传匿名函数，直接执行该匿名函数，无需控制器。  
+  $func：控制器函数名。当$controller传了匿名函数时，不能传该参数。
 
 + `Router::match(array $method, string $path, $controller, string $func = null)`   
-$method：当前路由允许的所有HTTP方法，如：```['get','post']```。所有元素都必须为小写。
+  $method：当前路由允许的所有HTTP方法，如：```['get','post']```。所有元素都必须为小写。
 + 使用匿名函数
 ```php
 Router::get('/test', function () {
@@ -492,8 +611,8 @@ Router::get('/test', function () {
 #### 定义一组路由
  当多个路由都需要使用同一组中间件或前缀时使用。  
 + `group($options, $callback = null)`：  
-$options： 统一配置，支持配置中间件和前缀。例：`['middleware'=>['test'],'prefix'=>'admin']`。也可以忽略配置，直接传回调函数。  
-$callback：回调函数，包含多个单一路由。如果路由组和单一路由同时配置了中间件和前缀，则优先使用路由组的配置。
+  $options： 统一配置，支持配置中间件和前缀。例：`['middleware'=>['test'],'prefix'=>'admin']`。也可以忽略配置，直接传回调函数。  
+  $callback：回调函数，包含多个单一路由。如果路由组和单一路由同时配置了中间件和前缀，则优先使用路由组的配置。
 
 ```
 Router::group(['middleware'=>['test'],'prefix'=>'admin'], function () {
@@ -544,12 +663,12 @@ view('index', ['a'=>'Hello World']);
 #### 协程风格
 使用进程池+协程服务器实现，类似异步风格的SWOOLE_BASE模式，多个子进程开启相同的纯协程HTTP服务器，对同一端口监听，争抢请求。  
 目前支持的`swoole.server`配置项有：
-+ worker_num
-+ max_request
-+ enable_static_handler
-+ document_root
-+ static_handler_locations
-+ daemonize
++ worker_num：子进程数
++ max_request：每个子进程最大处理请求数，到达后会重启当前进程
++ enable_static_handler：使用swoole服务器处理静态资源
++ document_root：项目根目录
++ static_handler_locations：存放静态资源的目录
++ daemonize：使服务器以守护进程运行
 
 #### 异步风格
 使用异步风格服务器，`swoole.server`所有配置项都能使用，默认使用SWOOLE_BASE模式。  
